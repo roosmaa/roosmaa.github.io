@@ -15,12 +15,13 @@ One option would have been to recompile Evince and swap the mouse left and middl
 
 Here is the content of my ~/.gtkrc-2.0 file on my tablet, it only makes the Evince main window scrollbar bigger, but can be modified to make any scrollbar bigger:
 
-<pre class="brush: plain; title: ; toolbar: false; notranslate" title="">style "big-scrolls" {
+{% codeblock %}{% raw %}
+style "big-scrolls" {
 GtkRange::stepper-size = 50
 GtkRange::slider-width = 50
 }
 
 widget_class "EvWindow.*.GtkScrolledWindow.*" style "big-scrolls"
-</pre>
+{% endraw %}{% endcodeblock %}
 
 When constructing the selector path for the style, one can use <a href="http://chipx86.github.com/gtkparasite/" target="_blank">Parasite</a> to inspect any existing application. That&#8217;s at least what I did with Evince.

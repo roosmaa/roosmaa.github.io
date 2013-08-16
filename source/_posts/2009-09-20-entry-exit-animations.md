@@ -11,11 +11,12 @@ tags:
   - Animations
   - Java
 ---
-When writing [FUN2Learn][1] I was presented with a challenge: how to make views animate at the start and end of the activity without creating a big mess in the code. So I created a helper class to negotiate the animations for registered views and have a central place to trigger them.
+When writing FUN2Learn I was presented with a challenge: how to make views animate at the start and end of the activity without creating a big mess in the code. So I created a helper class to negotiate the animations for registered views and have a central place to trigger them.
 
 In the <a href="http://developer.android.com/reference/android/app/Activity.html#onCreate(android.os.Bundle)" target="_blank">Activity.onCreate()</a> you need to register the views that have entry/exit animations and start the entry animation if the activity is just started:
 
-<pre class="brush: java; title: ; notranslate" title="">View v1, v2, v3;
+{% codeblock lang:java %}{% raw %}
+View v1, v2, v3;
   AnimationNegotiator negotiator;
   // ...
 
@@ -29,7 +30,7 @@ In the <a href="http://developer.android.com/reference/android/app/Activity.html
     if (savedInstanceState == null)
       animator.animate(GroupAnimator.ANIMATION_IN);
   }
-</pre>
+{% endraw %}{% endcodeblock %}
 
 The GroupAnimator.animate() function can also take a callback as a second argument, which is called when animations end. This is useful for using the GroupAnimator to do exit animations.
 
@@ -37,7 +38,8 @@ To do the exit animation you need to override the [Activity.onKeyDown()][2] meth
 
 The AnimationNegotiator is a simple callback that is used to determine the animation used for each of the visible views. When called, it receives the view in question and the animation type (in/out) as arguments and is expected to return the animation to be used. For instance a simple implementation of this could be:
 
-<pre class="brush: java; title: ; notranslate" title="">public class MyActivity extends Activity implements AnimationNegotiator
+{% codeblock lang:java %}{% raw %}
+public class MyActivity extends Activity implements AnimationNegotiator
 {
   // ...
   public Animation negotiateAnimation(View v, int animType)
@@ -51,11 +53,12 @@ The AnimationNegotiator is a simple callback that is used to determine the anima
   }
   // ...
 }
-</pre>
+{% endraw %}{% endcodeblock %}
 
 And finally the code for GroupAnimator itself:
 
-<pre class="brush: java; collapse: true; light: false; title: ; toolbar: true; notranslate" title="">package net.roosmaa.types;
+{% codeblock lang:java %}{% raw %}
+package net.roosmaa.types;
 
 import java.security.InvalidParameterException;
 import java.util.ArrayList;
@@ -245,7 +248,6 @@ public class GroupAnimator
     }
   }
 }
-</pre>
+{% endraw %}{% endcodeblock %}
 
- [1]: http://fun2learn.roosmaa.net/
  [2]: http://developer.android.com/reference/android/app/Activity.html#onKeyDown(int, android.view.KeyEvent)

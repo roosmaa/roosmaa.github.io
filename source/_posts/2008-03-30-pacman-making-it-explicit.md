@@ -15,7 +15,8 @@ After getting hibernation to work, I accidentally rebooted to a previous state t
 
 So, I whipped up a quick hackish shell script to accomplish the task. Maybe someone with a similar problem will find this useful. But be warned, if something goes wrong, don&#8217;t blame me.
 
-<pre class="brush: bash; title: ; notranslate" title="">#!/bin/bash
+{% codeblock lang:bash %}{% raw %}
+#!/bin/bash
 # File name: pkg_explicit
 
 if [ -z &quot;$1&quot; ]; then echo &quot;Usage: $0 [--restore] &lt;PACKAGE&gt;&quot;; exit 1; fi
@@ -44,4 +45,4 @@ else
 if [ ! -e $PKG_DIR/desc.rec ]; then echo &quot;Nothing to restore!&quot;; exit 1; fi
 mv $PKG_DIR/desc{.rec,}
 fi
-</pre>
+{% endraw %}{% endcodeblock %}

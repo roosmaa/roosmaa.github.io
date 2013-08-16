@@ -23,7 +23,8 @@ Say you want to fade out some views (with different durations) and hide them aft
 
 You could go and write this for every animation for every view:
 
-<pre class="brush: java; title: ; notranslate" title="">View viewN = ..;
+{% codeblock lang:java %}{% raw %}
+View viewN = ..;
 Animation animN = ...;
 animN.setAnimationListener(new AnimationListener() {
   // ...
@@ -40,11 +41,12 @@ animN.setAnimationListener(new AnimationListener() {
   // ...
 });
 viewN.startAnimation(animN);
-</pre>
+{% endraw %}{% endcodeblock %}
 
 As you can see it will get out of hand pretty fast if using this approach. You end up repeating yourself over and over, instead you&#8217;d just want to use something like this:
 
-<pre class="brush: java; title: ; notranslate" title="">AnimationListener animListener = new AnimationListener() {
+{% codeblock lang:java %}{% raw %}
+AnimationListener animListener = new AnimationListener() {
   // ...
   void onAnimationEnd(Animation anim)
   {
@@ -63,6 +65,6 @@ As you can see it will get out of hand pretty fast if using this approach. You e
 anim1.setAnimationListener(animListener);
 anim2.setAnimationListener(animListener);
 // ...
-</pre>
+{% endraw %}{% endcodeblock %}
 
 And use it with all the animations. This is possible with an hashtable mapping animations to views, so that magic function getAnimactionView(Animation a) will just have to look it up from the hashtable and return it. The catch is that you can&#8217;t use the same animation for many views.

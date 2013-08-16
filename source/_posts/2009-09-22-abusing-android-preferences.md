@@ -14,7 +14,8 @@ Sometimes a situation arises when you want to use a certain <a href="http://deve
 
 Reimplementing those controls isn&#8217;t very productive most of the times. There is a way to get things done quickly, but in my opinion it isn&#8217;t the cleanest of solutions. The following code shows how to re-route <a href="http://developer.android.com/reference/android/preference/ListPreference.html" target="_blank">ListPreferences</a> values to a boolean preference:
 
-<pre class="brush: java; title: ; notranslate" title="">public class MyPreference extends ListPreference
+{% codeblock lang:java %}{% raw %}
+public class MyPreference extends ListPreference
 {
   // ...
   @Override
@@ -31,4 +32,4 @@ Reimplementing those controls isn&#8217;t very productive most of the times. Th
     return super.persistBoolean(val);
   }
 }
-</pre>
+{% endraw %}{% endcodeblock %}

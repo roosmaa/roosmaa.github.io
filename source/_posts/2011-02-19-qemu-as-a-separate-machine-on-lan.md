@@ -20,7 +20,8 @@ Usermode is not very good for running servers on them, so TUN/TAP it is. The pro
 
 So, the easy and nice way: first you need to set-up your network connection as a bridged one. To do that globally we need to edit the */etc/network/interfaces* file and make it look like this:
 
-<pre class="brush: plain; title: ; notranslate" title="">auto lo
+{% codeblock %}{% raw %}
+auto lo
 iface lo inet loopback
 
 iface eth0 inet manual
@@ -34,22 +35,24 @@ iface br0 inet dhcp
 	post-down ifconfig eth0 down
 	post-down brctl delif br0 eth0
 	post-down brctl delbr br0
-</pre>
+{% endraw %}{% endcodeblock %}
 
 You probably want to reboot your computer for the changes to take effect.
 
 Now the default */etc/qemu-ifup* on Ubuntu looks like this:
 
-<pre class="brush: bash; title: ; notranslate" title="">#!/bin/sh
+{% codeblock lang:bash %}{% raw %}
+#!/bin/sh
 
 switch=$(/sbin/ip route list | awk '/^default / { print $5 }')
 /sbin/ifconfig $1 0.0.0.0 up
 /usr/sbin/brctl addif ${switch} $1
-</pre>
+{% endraw %}{% endcodeblock %}
 
 &#8230; and */etc/qemu-ifdown* looks like:
 
-<pre class="brush: bash; title: ; notranslate" title="">#!/bin/sh
+{% codeblock lang:bash %}{% raw %}
+#!/bin/sh
 
 # NOTE: This script is intended to run in conjunction with qemu-ifup
 #       which uses the same logic to find your bridge/switch
@@ -58,11 +61,12 @@ switch=$(/sbin/ip route list | awk '/^default / { print $5 }')
 
 /usr/sbin/brctl delif $switch $1
 /sbin/ifconfig $1 0.0.0.0 down
-</pre>
+{% endraw %}{% endcodeblock %}
 
 QEMU executes those scripts automatically, however, they expect to be run as root, which I don&#8217;t like, so we will have to execute them manually with sudo if we want to run qemu as a normal user. A simple QEMU wrapper that I use looks like:
 
-<pre class="brush: bash; title: ; notranslate" title="">#!/bin/sh
+{% codeblock lang:bash %}{% raw %}
+#!/bin/sh
 
 IFACE=$(sudo tunctl -b -u $(whoami))
 sudo /etc/qemu-ifup $IFACE
@@ -71,6 +75,6 @@ qemu -net nic -net tap,ifname=$IFACE,script=no $@
 
 sudo /etc/qemu-ifdown $IFACE
 sudo tunctl -d $IFACE
-</pre>
+{% endraw %}{% endcodeblock %}
 
 This creates a new TAP interface, runs the qemu-ifup script to add it to the default bridge (br0) you should be using, runs QEMU, and afterwards cleans up after itself. And for me this is much more elegant solution compared to most out there.

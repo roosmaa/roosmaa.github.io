@@ -14,27 +14,24 @@ The iPhone AppStore is filled with LITE and full versions of the same applicatio
 
 I wanted to make it so that you had the free base version of the application and then an add-on that you could buy and get the added functionality in the original application. Also, the base version would advertise the extra functionality that was obtainable.
 
-<div id="attachment_182" class="wp-caption aligncenter" style="width: 218px">
-  <a href="http://www.roosmaa.net/wp-content/uploads/2009/12/ieuromillions_iphone.jpg"><img class="size-medium wp-image-182" title="iEuroMillions (iPhone)" src="http://www.roosmaa.net/wp-content/uploads/2009/12/ieuromillions_iphone-208x300.jpg" alt="" width="208" height="300" /></a><p class="wp-caption-text">
-    iEuroMillions (iPhone)
-  </p>
-</div>
+<a href="/images/content/2009/12/ieuromillions_iphone.jpg">{% img center /images/content/2009/12/ieuromillions_iphone-208x300.jpg 208 300 'iEuroMillions (iPhone)' %}</a>
 
 As can be seen from the image above, the iEuroMillions main navigational element is a tab-bar. Luckily for me Androids TabActivity (TabHost, TabWidget, etc) supports tab content in Intent/Activity form. This saved me a lot of headache as I could just use the activities in my extension package.
 
 To do that however I had to make sure that both of my applications were using the same UID, because else the Activity embedding as the tab content would fail. Having set the android:sharedUserId attribute in my AndroidManifest.xml I was all set and I could easily use the Activities in my extension package.
 
-<pre class="brush: java; title: ; notranslate" title="">tab = host.newTabSpec("play");
+{% codeblock lang:java %}{% raw %}
+tab = host.newTabSpec("play");
 tab.setIndicator(res.getText(R.string.tab_play), res.getDrawable(R.drawable.play));
 it = new Intent();
 it.setComponent(new ComponentName(PKG_STATS, PKG_STATS+".PlayActivity"));
 tab.setContent(it);
 host.addTab(tab);
-</pre>
+{% endraw %}{% endcodeblock %}
 
 In the code sample above you can also see how to send explicit intents to activities in separate packages. In order to add a dummy page where to advertise your extension you need to check if your extension is installed and if not change the intent in the tab creation code.
 
-<pre class="brush: java; title: ; notranslate" title="">boolean hasPkg = false;
+{% codeblock lang:java %}{% raw %}boolean hasPkg = false;
 PackageManager pm = getPackageManager();
 try
 {
@@ -43,15 +40,11 @@ try
 }
 catch (NameNotFoundException e)
 {}
-</pre>
+{% endraw %}{% endcodeblock %}
 
 For iEuroMillions there is some network activity in the main package, and when the numbers are updated I had to notify every activity in the tabs that was interested. I found that the easiest and most elegant solution to do that is to broadcast an Intent and let the applications listen for it.
 
-<div id="attachment_186" class="wp-caption aligncenter" style="width: 220px">
-  <a href="http://www.roosmaa.net/wp-content/uploads/2009/12/buynow.png"><img class="size-medium wp-image-186" title="iEuroMillions (Android)" src="http://www.roosmaa.net/wp-content/uploads/2009/12/buynow-210x300.png" alt="" width="210" height="300" /></a><p class="wp-caption-text">
-    iEuroMillions (Android)
-  </p>
-</div>
+<a href="/images/content/2009/12/buynow.png">{% img center /images/content/2009/12/buynow-210x300.png 210 300 'iEuroMillions (Android)' %}</a>
 
 There are however 2 annoying bugs with this approach. First and the most annoying is that if the user should uninstall the extension package, then the INTERNET permission I use in the main package gets revoked, this is due to the shared user id. I couldn&#8217;t find a workaround for it, so I&#8217;m just hoping that the user doesn&#8217;t uninstall the extension without uninstalling/reinstalling the main package.
 

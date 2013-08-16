@@ -19,7 +19,9 @@ During the trial and error process I encountered several different errors, some 
 
 The first problem was easy to find a solution on the web; ProGuard was throwing out warnings about the support-v4 library. Those just had to be disabled by adding an extra line to proguard.cfg:
 
-<pre>-dontwarn android.support.**</pre>
+{% codeblock %}{% raw %}
+-dontwarn android.support.**
+{% endraw %}{% endcodeblock %}
 
 After which there was my first encounter with the dreaded  &#8221;Conversion to Dalvik format failed with error 1&#8243; failed. This kept appearing and disappearing a lot. And as there is absolutely no logs as to why it happened my only guess is that ProGuard failed to produce Dalvik compatible bytecode — which in turn means something is wrong somewhere.
 
@@ -31,7 +33,8 @@ Second, there appears to be an annoying bug in the actual ADT themselves that 
 
 There was a third problem as well, some IllegalArgumentException in ProGuard, saying that some method in the compatibility library was using something from SDK v14 and it couldn&#8217;t find it.
 
-<pre class="brush: plain; highlight: [10]; title: ; notranslate" title="">Unexpected error while evaluating instruction:
+{% codeblock %}{% raw %}
+Unexpected error while evaluating instruction:
   Class       = [android/support/v4/view/AccessibilityDelegateCompat$AccessibilityDelegateJellyBeanImpl]
   Method      = [newAccessiblityDelegateBridge(Landroid/support/v4/view/AccessibilityDelegateCompat;)Ljava/lang/Object;]
   Instruction = [18] areturn
@@ -42,7 +45,8 @@ Unexpected error while performing partial evaluation:
   Exception   = 1 (Can't find any super classes of [android/support/v4/view/AccessibilityDelegateCompatIcs$1] (not even immediate super class [android/view/View$AccessibilityDelegate]))
 java.lang.IllegalArgumentException: Can't find any super classes of [android/support/v4/view/AccessibilityDelegateCompatIcs$1] (not even immediate super class [android/view/View$AccessibilityDelegate])
 	at proguard.evaluation.value.ReferenceValue.generalize(ReferenceValue.java:287)
-	...</pre>
+	...
+{% endraw %}{% endcodeblock %}
 
 Solution for that was simple: bump up the target SDK version of the project to the latest one. Only thing to watch out with this one is that backwards compatibility stuff won&#8217;t be used when you run your app on newer platforms now &#8211; so you need to know what has changed in the platform and take that into consideration (ie with v14 the default AsyncTask behaviour changed).
 

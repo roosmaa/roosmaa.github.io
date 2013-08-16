@@ -21,7 +21,8 @@ The first option is the way to go if you are sure that the window you are gettin
 Here is a small example on how to use the first method in C#:  
 (All of the P/Invokes used can be obtained from <a href="http://www.pinvoke.net/" target="_blank">pinvoke.net</a>)
 
-<pre class="brush: csharp; title: ; notranslate" title="">IntPtr hWnd = ...;
+{% codeblock lang:csharp %}{% raw %}
+IntPtr hWnd = ...;
 
 Image screenshot = new Bitmap(..., ...);
 using (Graphics ssg = Graphics.FromImage(screenshot))
@@ -40,15 +41,11 @@ using (Graphics ssg = Graphics.FromImage(screenshot))
 
 // Display the image in a PictureBox:
 pictureBox1.Image = screenshot;
-</pre>
+{% endraw %}{% endcodeblock %}
 
 ## Rendering the window into a device context
 
-<div id="attachment_137" class="wp-caption alignleft" style="width: 160px">
-  <a href="http://www.roosmaa.net/wp-content/uploads/2009/09/PrintWindow_0.png"><img class="size-thumbnail wp-image-137 " title="Calculator by PrintWindow" src="http://www.roosmaa.net/wp-content/uploads/2009/09/PrintWindow_0-150x150.png" alt="Calculator by PrintWindow" width="150" height="150" /></a><p class="wp-caption-text">
-    PrintWindow
-  </p>
-</div>
+<a href="/images/content/2009/09/PrintWindow_0.png">{% img left /images/content/2009/09/PrintWindow_0-150x150.png 150 150 'Calculator by PrintWindow' %}</a>
 
 The second method utilizes the <a href="http://msdn.microsoft.com/en-us/library/dd162869(VS.85).aspx" target="_blank">PrintWindow</a> function which seems to use some black magic along with <a href="http://msdn.microsoft.com/en-us/library/dd145216(VS.85).aspx" target="_blank">WM_PRINT</a> message to obtain the picture of the window. In a nutshell it takes a device context and tells the window to render itself into it.
 
@@ -56,11 +53,7 @@ While it does get you the picture of the window even if it is under other window
 
 It occasionally has a bad habit of messing up the window of which it has taken the picture, guess it&#8217;s the black magic part in the function that no one knows about. For instance when restoring the window and using the PrintWindow function immediately after that, the widgets in the window thing they have rendered themselves, but in reality they haven&#8217;t. A way around it is to wait a bit after restoring the window.
 
-<div id="attachment_136" class="wp-caption alignright" style="width: 160px">
-  <a href="http://www.roosmaa.net/wp-content/uploads/2009/09/PrintWindow_1.png"><img class="size-thumbnail wp-image-136 " title="Calculator by PrintWindow (PW_CLIENTONLY)" src="http://www.roosmaa.net/wp-content/uploads/2009/09/PrintWindow_1-150x150.png" alt="Calculator by PrintWindow with PW_CLIENTONLY" width="150" height="150" /></a><p class="wp-caption-text">
-    PrintWindow with PW_CLIENTONLY
-  </p>
-</div>
+<a href="/images/content/2009/09/PrintWindow_1.png">{% img right /images/content/2009/09/PrintWindow_1-150x150.png 150 150 'Calculator by PrintWindow with PW_CLIENTONLY' %}</a>
 
 By default PrintWindow gets the picture of the whole window (including titlebar, menubar, borders, etc). In some cases this is not desired and from the PrintWindow <a href="http://msdn.microsoft.com/en-us/library/dd162869(VS.85).aspx" target="_blank">documentation</a> one can see that the PW_CLIENTONLY flag can be used for it.
 
@@ -68,7 +61,8 @@ Wrong! The PW_CLIENTONLY implementation is buggy, the rendered picture (on the r
 
 The location of the client area to be cut out of the whole image can be calculated with the information from these three functions: <a href="http://msdn.microsoft.com/en-us/library/ms633503(VS.85).aspx" target="_blank">GetClientRect</a>, <a href="http://msdn.microsoft.com/en-us/library/ms633519(VS.85).aspx" target="_blank">GetWindowRect</a> and <a href="http://msdn.microsoft.com/en-us/library/aa931003.aspx" target="_blank">ClientToScreen</a>. Here is an example of how to do it:
 
-<pre class="brush: csharp; title: ; notranslate" title="">IntPtr hWnd = ...;
+{% codeblock lang:csharp %}{% raw %}
+IntPtr hWnd = ...;
 Graphics ssg = ...;
 
 // Calculate the offset of the clientArea
@@ -95,4 +89,4 @@ using (Image tmpImg = new Bitmap(wndRect.Width, wndRect.Height))
     Rectangle clientArea = new Rectangle(offset.X, offset.Y, clRect.Width, clRect.Height);
     ssg.DrawImage(tmpImg, 0, 0, clientArea, GraphicsUnit.Pixel);
 }
-</pre>
+{% endraw %}{% endcodeblock %}
