@@ -1,0 +1,214 @@
+#font {
+    .roboto-regular() {
+        font-family: 'Roboto', sans-serif;
+        font-weight: 400;
+    }
+
+    .roboto-light() {
+        font-family: 'Roboto', sans-serif;
+        font-weight: 300;
+    }
+
+    .roboto-thin() {
+        font-family: 'Roboto', sans-serif;
+        font-weight: 100;
+    }
+}
+
+@break-1: 640px;
+@break-2: 475px;
+
+body, html {
+    #font.roboto-light;
+    font-size: 14px;
+}
+
+@media screen {
+    body, html {
+        background-color: #eee;
+        color: #110A04;
+    }
+
+    #main-margins {
+        position: relative;
+        max-width: 595px;
+        min-height: 842px;
+
+        @media (min-width: @break-1) {
+           margin: 50px auto;
+        }
+
+        margin: 10px auto;
+        padding: 30px 35px;
+        box-shadow: 0 1px 3px #ccc;
+        background-color: #fafafa;
+
+    }
+
+    a {
+        color: #333;
+        text-decoration: none;
+
+        &:hover {
+            text-decoration: underline;
+        }
+    }
+}
+
+@media print {
+    body, html, a {
+        color: #000;
+    }
+
+    a {
+        text-decoration: none;
+    }
+}
+
+.person {
+    @media screen and (min-width: @break-1), print {
+        float: left;
+    }
+
+    h1, h2 {
+        display: block;
+        margin: 0;
+    }
+
+    @media screen and (min-width: @break-2), print {
+        h1, h2 {
+            display: inline;
+        }
+
+        h2 {
+            margin-left: 1em;
+        }
+    }
+
+    h1 {
+        #font.roboto-regular;
+        font-size: 24px;
+    }
+
+    h2 {
+        #font.roboto-light;
+        font-size: 18px;
+    }
+}
+
+.contacts {
+    #font.roboto-light;
+    font-size: 13px;
+
+    ul {
+        list-style: none;
+        padding: 0;
+        margin: 10px 0 0 0;
+        @media screen and (min-width: @break-1), print {
+            text-align: right;
+        }
+    }
+
+    li {
+        margin: 4px 0 2px;
+    }
+
+    .field {
+        display: none;
+    }
+
+    @media screen and (min-width: @break-1), print {
+        i.icon-left {
+            display: none;
+        }
+    }
+    @media screen and (max-width: (@break-1 - 1px)) {
+        i.icon-right {
+            display: none;
+        }
+    }
+
+    i.icon-right {
+        margin-left: 5px;
+        margin-right: -5px;
+        width: 15px;
+        text-align: center;
+    }
+
+    i.icon-left {
+        margin-right: 5px;
+        width: 15px;
+        text-align: center;
+    }
+
+    // Adjust icon sizes so they would appear visually the same size
+    i.fa { margin-top: -10px; }
+    i.fa-envelope   { font-size: 105%; }
+    i.fa-mobile     { font-size: 150%; }
+    i.fa-skype      { font-size: 130%; }
+    i.fa-map-marker { font-size: 130%; }
+}
+
+h3 {
+    #font.roboto-thin;
+    font-size: 18px;
+    margin: 25px 0 15px 0;
+}
+
+p {
+    margin: 8px 0;
+}
+
+ul {
+    padding-left: 20px;
+}
+
+.work .position {
+    @left-content-margin: 80px;
+    margin: 20px 0 10px;
+
+    @media screen and (min-width: @break-2), print {
+        padding-left: @left-content-margin;
+
+        .header {
+            .period {
+                #font.roboto-thin;
+
+                display: block;
+                float: left;
+                margin-left: -@left-content-margin;
+
+                .start, .end {
+                    display: block;
+                    text-align: right;
+                }
+                .div { display: none; }
+            }
+        }
+    }
+    @media screen and (max-width: (@break-2 - 1px)) {
+        .header {
+            font-size: 18px;
+
+            .period {
+                #font.roboto-thin;
+                font-size: 14px;
+
+                display: block;
+                margin-bottom: 2px;
+            }
+        }
+    }
+
+    .header {
+        .activity {
+            #font.roboto-regular;
+        }
+    }
+}
+
+.spoken-languages {
+    ul li {
+        margin: 5px 0;
+    }
+}
