@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom" xml:lang="en">
+    <title>Mart Roosmaa - tailscale</title>
+    <link rel="self" type="application/atom+xml" href="https://www.roosmaa.net/tags/tailscale/atom.xml"/>
+    <link rel="alternate" type="text/html" href="https://www.roosmaa.net"/>
+    <generator uri="https://www.getzola.org/">Zola</generator>
+    <updated>2024-11-28T00:00:00+00:00</updated>
+    <id>https://www.roosmaa.net/tags/tailscale/atom.xml</id>
+    <entry xml:lang="en">
+        <title>Unexpiring Tailscale auth keys</title>
+        <published>2024-09-09T00:00:00+00:00</published>
+        <updated>2024-11-28T00:00:00+00:00</updated>
+        
+        <author>
+          <name>
+            
+              Mart Roosmaa
+            
+          </name>
+        </author>
+        
+        <link rel="alternate" type="text/html" href="https://www.roosmaa.net/blog/2024/unexpiring-tailscale-auth-keys/"/>
+        <id>https://www.roosmaa.net/blog/2024/unexpiring-tailscale-auth-keys/</id>
+        
+        <content type="html" xml:base="https://www.roosmaa.net/blog/2024/unexpiring-tailscale-auth-keys/">&lt;p&gt;Ideally when running Tailscale in kubernetes one should use ephemeral configuration for the keys. But regular auth keys are limited to 90 days of validity, which means every 3 months someone would have to rotate them.&lt;&#x2F;p&gt;
+&lt;p&gt;In a small homelab, where keeping the software up to date already is a chore, I wouldn&#x27;t want to add another manual action to the todo list. A workaround I was using, was to use non-ephemeral auth keys combined with persistent volumes. This allowed me to log the workloads into Tailscale with a valid key, and as long as the state was persisted on Ceph, I wouldn&#x27;t have to worry.&lt;&#x2F;p&gt;
+&lt;p&gt;The problem was that my janky Ceph setup was turning out to be unbearably slow for &quot;critical&quot; components. Various issues with Tailscale pods starting up due to slow Ceph, or when I was abusing Ceph by restarting nodes randomly, the Tailscale containers would temporarily become unresponsive due to the underlying storage being unavailable.&lt;&#x2F;p&gt;
+&lt;p&gt;I wanted to move away from Ceph dependency in the Tailscale container, so I started looking for ways to remove the manual chore part from the key rotation.&lt;&#x2F;p&gt;
+&lt;p&gt;On various reddit posts and github issues Tailscale employees were referring people to the OAuth clients. The client secrets don&#x27;t expire and can be used to generate device auth keys on-demand.&lt;&#x2F;p&gt;
+&lt;p&gt;Initially I was thinking of creating a cronjob to update the Tailscale kubernetes Secret every hour or so. Or perhaps an easier version to setup init-container to do the auth key provisioning.&lt;&#x2F;p&gt;
+&lt;p&gt;But then I saw a small mention (on reddit) to a &quot;well hidden&quot; documentation page - &lt;a href=&quot;https:&#x2F;&#x2F;tailscale.com&#x2F;kb&#x2F;1215&#x2F;oauth-clients#registering-new-nodes-using-oauth-credentials&quot; class=&quot;external&quot;&gt;registering new nodes using OAuth credentials&lt;&#x2F;a&gt;. Turns out, the OAuth secrets can be used directly as device auth-keys. Meaning, the Tailscale app automatically provisions the auth keys without any extra effort on our side.&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;creating-the-oauth-client&quot;&gt;Creating the OAuth client&lt;&#x2F;h2&gt;
+&lt;p&gt;Unlike with auth keys, when using OAuth client to authenticate, Tailscale requires the usage of device tags. Let&#x27;s make sure that we have the approprate tag created in our &lt;a href=&quot;https:&#x2F;&#x2F;login.tailscale.com&#x2F;admin&#x2F;acls&#x2F;file&quot; class=&quot;external&quot;&gt;Tailscale ACL&lt;&#x2F;a&gt;. I&#x27;ve named my tag &lt;code&gt;tag:subnet-router&lt;&#x2F;code&gt;.&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;json&quot; style=&quot;background-color:#2b303b;color:#c0c5ce;&quot; class=&quot;language-json &quot;&gt;&lt;code class=&quot;language-json&quot; data-lang=&quot;json&quot;&gt;&lt;span&gt;{
+&lt;&#x2F;span&gt;&lt;span&gt;    &amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;tagOwners&lt;&#x2F;span&gt;&lt;span&gt;&amp;quot;: {
+&lt;&#x2F;span&gt;&lt;span&gt;        &amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;tag:subnet-routes&lt;&#x2F;span&gt;&lt;span&gt;&amp;quot;: [&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;autogroup:admin&lt;&#x2F;span&gt;&lt;span&gt;&amp;quot;]
+&lt;&#x2F;span&gt;&lt;span&gt;    }
+&lt;&#x2F;span&gt;&lt;span&gt;}
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;Then, under Settings → Tailnet Settings → &lt;a href=&quot;https:&#x2F;&#x2F;login.tailscale.com&#x2F;admin&#x2F;settings&#x2F;oauth&quot; class=&quot;external&quot;&gt;OAuth clients&lt;&#x2F;a&gt;, we can create the new OAuth client.&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;img src=&quot;https:&#x2F;&#x2F;www.roosmaa.net&#x2F;blog&#x2F;2024&#x2F;unexpiring-tailscale-auth-keys&#x2F;create-oauth-1.png&quot; alt=&quot;Screenshot of the Generate OAuth client... button&quot; &#x2F;&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;Pick a suitable description for the client, then choose the appropriate scopes. Since we&#x27;re only using the OAuth client to generate auth keys, we only need the &lt;code&gt;auth_keys&lt;&#x2F;code&gt; scope (read &amp;amp; write access for auth keys). Select the tag you want the device to get after it has authenticated.&lt;&#x2F;p&gt;
+&lt;blockquote class=&quot;note&quot;&gt;
+	&lt;p class=&quot;alert-title&quot;&gt;
+		&lt;i class=&quot;icon&quot;&gt;&lt;&#x2F;i&gt;Note&lt;&#x2F;p&gt;
+	&lt;p&gt;Tailscale updated their OAuth client scopes to be more granular on 14&#x2F;10&#x2F;2024. Before that, it used to be the &lt;code&gt;devices&lt;&#x2F;code&gt; scope that was needed for this.&lt;&#x2F;p&gt;
+
+&lt;&#x2F;blockquote&gt;
+&lt;p&gt;&lt;img src=&quot;https:&#x2F;&#x2F;www.roosmaa.net&#x2F;blog&#x2F;2024&#x2F;unexpiring-tailscale-auth-keys&#x2F;create-oauth-2.png#no-hover&quot; alt=&quot;Screenshot of entering a OAuth client description&quot; &#x2F;&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;img src=&quot;https:&#x2F;&#x2F;www.roosmaa.net&#x2F;blog&#x2F;2024&#x2F;unexpiring-tailscale-auth-keys&#x2F;create-oauth-3.png#no-hover&quot; alt=&quot;Screenshot of selecting the correct permission scopes&quot; &#x2F;&gt;&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;configuring-the-tailscale-docker-container&quot;&gt;Configuring the Tailscale docker container&lt;&#x2F;h2&gt;
+&lt;p&gt;If you&#x27;re using the Tailscale docker container, you need to pass in the OAuth client secret using the &lt;code&gt;TS_AUTHKEY&lt;&#x2F;code&gt; environment variable.&lt;&#x2F;p&gt;
+&lt;p&gt;There&#x27;s no dedicated environment variable for advertise tags, but the &lt;code&gt;TS_EXTRA_ARGS&lt;&#x2F;code&gt; can be used for that, by passing in the full command line flag, as such &lt;code&gt;--advertise-tags=tag:subnet-router&lt;&#x2F;code&gt;.&lt;&#x2F;p&gt;
+&lt;details&gt;
+&lt;summary&gt;Example of a kubernetes Deployment&lt;&#x2F;summary&gt;
+&lt;p&gt;This is how I deploy my subnet-router Tailscale containers on kubernetes. It retrieves the client secret from the &lt;code&gt;tailscale-subnet-router&lt;&#x2F;code&gt; secret.&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;yaml&quot; style=&quot;background-color:#2b303b;color:#c0c5ce;&quot; class=&quot;language-yaml &quot;&gt;&lt;code class=&quot;language-yaml&quot; data-lang=&quot;yaml&quot;&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;apiVersion&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;apps&#x2F;v1
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;kind&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;Deployment
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;metadata&lt;&#x2F;span&gt;&lt;span&gt;:
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;name&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;subnet-router
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;labels&lt;&#x2F;span&gt;&lt;span&gt;:
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;app&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;tailscale-subnet-router
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;spec&lt;&#x2F;span&gt;&lt;span&gt;:
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;replicas&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;2
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;selector&lt;&#x2F;span&gt;&lt;span&gt;:
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;matchLabels&lt;&#x2F;span&gt;&lt;span&gt;:
+&lt;&#x2F;span&gt;&lt;span&gt;      &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;app&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;tailscale-subnet-router
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;template&lt;&#x2F;span&gt;&lt;span&gt;:
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;metadata&lt;&#x2F;span&gt;&lt;span&gt;:
+&lt;&#x2F;span&gt;&lt;span&gt;      &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;name&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;subnet-router
+&lt;&#x2F;span&gt;&lt;span&gt;      &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;labels&lt;&#x2F;span&gt;&lt;span&gt;:
+&lt;&#x2F;span&gt;&lt;span&gt;        &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;app&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;tailscale-subnet-router
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;spec&lt;&#x2F;span&gt;&lt;span&gt;:
+&lt;&#x2F;span&gt;&lt;span&gt;      &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;containers&lt;&#x2F;span&gt;&lt;span&gt;:
+&lt;&#x2F;span&gt;&lt;span&gt;        - &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;name&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;tailscale
+&lt;&#x2F;span&gt;&lt;span&gt;          &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;image&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;ghcr.io&#x2F;tailscale&#x2F;tailscale:latest
+&lt;&#x2F;span&gt;&lt;span&gt;          &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;env&lt;&#x2F;span&gt;&lt;span&gt;:
+&lt;&#x2F;span&gt;&lt;span&gt;            - &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;name&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;TS_AUTHKEY
+&lt;&#x2F;span&gt;&lt;span&gt;              &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;valueFrom&lt;&#x2F;span&gt;&lt;span&gt;:
+&lt;&#x2F;span&gt;&lt;span&gt;                &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;secretKeyRef&lt;&#x2F;span&gt;&lt;span&gt;:
+&lt;&#x2F;span&gt;&lt;span&gt;                  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;name&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;tailscale-subnet-router
+&lt;&#x2F;span&gt;&lt;span&gt;                  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;key&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;authKey
+&lt;&#x2F;span&gt;&lt;span&gt;            - &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;name&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;TS_KUBE_SECRET
+&lt;&#x2F;span&gt;&lt;span&gt;              &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;value&lt;&#x2F;span&gt;&lt;span&gt;: &amp;quot;&amp;quot;
+&lt;&#x2F;span&gt;&lt;span&gt;            - &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;name&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;TS_USERSPACE
+&lt;&#x2F;span&gt;&lt;span&gt;              &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;value&lt;&#x2F;span&gt;&lt;span&gt;: &amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;true&lt;&#x2F;span&gt;&lt;span&gt;&amp;quot;
+&lt;&#x2F;span&gt;&lt;span&gt;            - &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;name&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;TS_ROUTES
+&lt;&#x2F;span&gt;&lt;span&gt;              &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;value&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;192.168.1.0&#x2F;24
+&lt;&#x2F;span&gt;&lt;span&gt;            - &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;name&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;TS_EXTRA_ARGS
+&lt;&#x2F;span&gt;&lt;span&gt;              &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;value&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;&amp;gt;-
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;                --advertise-tags=tag:subnet-router
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;                --accept-dns=false
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;                --stateful-filtering=true
+&lt;&#x2F;span&gt;&lt;span&gt;          &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;resources&lt;&#x2F;span&gt;&lt;span&gt;:
+&lt;&#x2F;span&gt;&lt;span&gt;            &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;requests&lt;&#x2F;span&gt;&lt;span&gt;:
+&lt;&#x2F;span&gt;&lt;span&gt;              &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;cpu&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;100m
+&lt;&#x2F;span&gt;&lt;span&gt;              &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;memory&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;50Mi
+&lt;&#x2F;span&gt;&lt;span&gt;          &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;securityContext&lt;&#x2F;span&gt;&lt;span&gt;:
+&lt;&#x2F;span&gt;&lt;span&gt;            &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;runAsUser&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;1000
+&lt;&#x2F;span&gt;&lt;span&gt;            &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;runAsGroup&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;1000
+&lt;&#x2F;span&gt;&lt;span&gt;      &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;securityContext&lt;&#x2F;span&gt;&lt;span&gt;:
+&lt;&#x2F;span&gt;&lt;span&gt;        &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;fsGroup&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;1000
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;&#x2F;details&gt;</content>
+        
+    </entry>
+</feed>
