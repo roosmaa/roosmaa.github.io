@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss xmlns:atom="http://www.w3.org/2005/Atom" version="2.0">
+    <channel>
+      <title>Mart Roosmaa - workshop</title>
+      <link>https://www.roosmaa.net</link>
+      <description></description>
+      <generator>Zola</generator>
+      <language>en</language>
+      <atom:link href="https://www.roosmaa.net/tags/workshop/rss.xml" rel="self" type="application/rss+xml"/>
+      <lastBuildDate>Fri, 15 Nov 2024 00:00:00 +0000</lastBuildDate>
+      <item>
+          <title>Upcycled 8-bay disk station</title>
+          <pubDate>Fri, 15 Nov 2024 00:00:00 +0000</pubDate>
+          <author>Mart Roosmaa</author>
+          <link>https://www.roosmaa.net/blog/2024/upcycled-disk-station/</link>
+          <guid>https://www.roosmaa.net/blog/2024/upcycled-disk-station/</guid>
+          <description xml:base="https://www.roosmaa.net/blog/2024/upcycled-disk-station/">&lt;p&gt;My &lt;a href=&quot;https:&#x2F;&#x2F;www.roosmaa.net&#x2F;blog&#x2F;2024&#x2F;hello-homelab&#x2F;#longhorn-or-ceph&quot;&gt;janky Ceph setup&lt;&#x2F;a&gt; with cheapest consumer grade SSDs started to get way slower and noticable than I had hoped.&lt;&#x2F;p&gt;
+&lt;p&gt;In terms of simplicity, I started thinking of moving all the disks to a single machine and sharing them out from there, i.e. a more traditional NAS box. This single machine would become the single-point of failure, but I think I can accept that.&lt;&#x2F;p&gt;
+&lt;p&gt;I was already looking at parts I would have to source to build this new machine that would allow me to hook up all the 6 SSDs to it, when on a whim I checked my desktop PC motherboard. To my surprise, the &lt;a href=&quot;https:&#x2F;&#x2F;es.msi.com&#x2F;Motherboard&#x2F;H270-TOMAHAWK-ARCTIC&#x2F;Specification&quot; class=&quot;external&quot;&gt;MSI H270 Tomahawk Artic&lt;&#x2F;a&gt; gaming motherboard had 6 SATA3 ports. And it even supported hot-swap.&lt;&#x2F;p&gt;
+&lt;p&gt;Without any further ado, I decided to not spend more money on new hardware and instead repurpose my desktop as the new homelab node for storage. After spending some time on figuring out how &lt;a href=&quot;https:&#x2F;&#x2F;www.roosmaa.net&#x2F;blog&#x2F;2024&#x2F;setting-up-zfs-on-talos&#x2F;&quot;&gt;ZSF on Talos&lt;&#x2F;a&gt; works, I soon got everything working.&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;img src=&quot;https:&#x2F;&#x2F;www.roosmaa.net&#x2F;blog&#x2F;2024&#x2F;upcycled-disk-station&#x2F;drives-in-case.jpg&quot; alt=&quot;Picture of all 6 drives mounted inside of the PC case&quot; &#x2F;&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;I knew that I had to prepare for the inevitable future, when one of those cheap SSDs fails. And with all the drives mounted inside the case, replacing the faulty one would be an undertaking.&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;upcycle-a-backplane&quot;&gt;Upcycle a backplane?&lt;&#x2F;h2&gt;
+&lt;p&gt;I got the wild idea that maybe I can find some cheap server backplane on eBay and repurpose it for my needs. Most used server parts are a bit harder to find (and more expensive) on EU eBay, so I didn&#x27;t know what to expect.&lt;&#x2F;p&gt;
+&lt;p&gt;After some searching I managed to find a HP DL380 G9 backplane PCB for a very reasonable price of 10€. From the pictures, it looked like something that would fit the bill - it had two standard SFF-8087 ports, and a 6-pin molex connector for power (presumably).&lt;&#x2F;p&gt;
+&lt;div class=&quot;image-gallery&quot;&gt;
+
+&lt;p&gt;&lt;img src=&quot;hp-dl380-g9-backplane-1.jpg&quot; alt=&quot;Front of the backplane&quot; &#x2F;&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;img src=&quot;hp-dl380-g9-backplane-2.jpg&quot; alt=&quot;Back of the backplane&quot; &#x2F;&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;img src=&quot;hp-dl380-g9-backplane-3.jpg&quot; alt=&quot;Back of the backplane, close-up&quot; &#x2F;&gt;&lt;&#x2F;p&gt;
+
+
+&lt;&#x2F;div&gt;
+&lt;p&gt;While I was waiting for the backplane to arrive, I did some preliminary research about it on the internet. Luckily someone already had mostly &lt;a href=&quot;https:&#x2F;&#x2F;www.reddit.com&#x2F;r&#x2F;homelab&#x2F;comments&#x2F;hjj6sd&#x2F;comment&#x2F;fx6zbpw&#x2F;&quot; class=&quot;external&quot;&gt;mapped out&lt;&#x2F;a&gt; the molex connector pins - 2x 12V, 2x GND and 2 unknown pins. According to &lt;a href=&quot;https:&#x2F;&#x2F;www.truenas.com&#x2F;community&#x2F;threads&#x2F;dl380-gen9-8sff-cage-747592-002-power-layout-connector.103064&#x2F;#post-710074&quot; class=&quot;external&quot;&gt;another source&lt;&#x2F;a&gt;, one or the other of the 2 unknown pins are unconnected depending on where the backplane was in the original server.&lt;&#x2F;p&gt;
+&lt;p&gt;If these 2 unknown pins were some form of data pins, which were required to make this backplane work, I would be out of luck. It would be difficult to reverse engineer these without access to the original servers from where these backplanes were from. However, I was hoping they were optional or something simple, like pulling the voltage up&#x2F;down to constant levels.&lt;&#x2F;p&gt;
+&lt;p&gt;Another big question mark for me was the caddy connectors below the SATA ports. In theory, based on what I could find on the internet, they are used to blink the LEDs on the front of the caddies on the front of the server. But the question lingering in my mind was, if they are also used as some sort of switch to indicate that the disk has been properly inserted. If that were the case, I would have to find a way to bypass that.&lt;&#x2F;p&gt;
+&lt;p&gt;As the main input voltage for this board was 12V, the easiest option would be to power it from the 12V PCIe connector that usually powers GPUs. Of course the connector on the backplane was not directly compatible with the PCIe connector. I would have to make my own cable. I ordered some sacrificial PCIe cables from AliExpress that I could splice together with the backplane cable that came with the backplane.&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;the-disk-station-is-born&quot;&gt;The disk station is born&lt;&#x2F;h2&gt;
+&lt;p&gt;In the mean time, I could get started with designing an enclosure for the PCB. I wanted to mount it on top of my PC case, and make the disks easily swappable. As there were holes in the PCB for airflow, I added a grille to the enclosure design as well. Mostly because it looked better, but also just in case if I ever needed to quickly introduce some active cooling there.&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;img src=&quot;https:&#x2F;&#x2F;www.roosmaa.net&#x2F;blog&#x2F;2024&#x2F;upcycled-disk-station&#x2F;freecad-design.png&quot; alt=&quot;Freecad design for the disk station&quot; &#x2F;&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;By the time the cables arrived from China, I had already finished 3d printing the enclosure and mounting the PCB in it.&lt;&#x2F;p&gt;
+&lt;p&gt;I spliced together the power cable, leaving the unknown pins floating. I verified with a multimeter that all the pins were connected to correct ones and was ready to test it out.&lt;&#x2F;p&gt;
+&lt;p&gt;I disconnected all the drives from the computer and connected the SATA ports from the motherboard to the SFF-8087 ports on the backplane, and connected the PCIe power connector from the PSU to the backplane. I powered up the computer. And... nothing blew up. The computer booted just fine.&lt;&#x2F;p&gt;
+&lt;p&gt;But the disks in the backplane weren&#x27;t being recognized. I took out the multimeter again, and started probing. The backplane was getting 12V input voltage, and the it was bumping it down to 5V and 3.3V for the SATA connectors.&lt;&#x2F;p&gt;
+&lt;p&gt;Since the power seemed to be fine, it must&#x27;ve been something related to data. Either the 2 unknown pins or the caddy connectors, I thought. I disconnected the backplane from the computer and put the disks back as they were for the time being.&lt;&#x2F;p&gt;
+&lt;p&gt;I needed to do more research. I was looking up the datasheets for the chips on the backplane to get any hints for the unknown pins in the molex connector. Nothing suggested that these pins would cause the drives not to work. The caddy connectors seemed to be unlikely as well, as from the photos I could find online, the flex PCB inside the caddies seemed fairly simple, so I was guessing there&#x27;s no chips on there and the caddy connectors drive the LEDs directly.&lt;&#x2F;p&gt;
+&lt;p&gt;Amidst my web searching, I came across a post on one forum, where I learned that SFF-8087 breakout cables exists in two flavours - forwards and backwards. Since it was my first time working with SFF-8087 format, I hadn&#x27;t even considered this. It seemed like the most likely cause for my issues. I ordered the backwards cable that I needed, and waited.&lt;&#x2F;p&gt;
+&lt;p&gt;Once the new cable arrived, I hooked everything up again and this time, the drives were being recognized by the motherboard and everything worked. I&#x27;m quite happy how it turned out.&lt;&#x2F;p&gt;
+&lt;div class=&quot;image-gallery&quot;&gt;
+
+&lt;p&gt;&lt;img src=&quot;diskstation-front.jpg&quot; alt=&quot;Completed disk station (front)&quot; &#x2F;&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;img src=&quot;diskstation-back.jpg&quot; alt=&quot;Completed disk station (back)&quot; &#x2F;&gt;&lt;&#x2F;p&gt;
+
+
+&lt;&#x2F;div&gt;</description>
+      </item>
+      <item>
+          <title>Jetpack Halloween costume for my daughter</title>
+          <pubDate>Thu, 31 Oct 2024 00:00:00 +0000</pubDate>
+          <author>Mart Roosmaa</author>
+          <link>https://www.roosmaa.net/blog/2024/jetpack-halloween-costume/</link>
+          <guid>https://www.roosmaa.net/blog/2024/jetpack-halloween-costume/</guid>
+          <description xml:base="https://www.roosmaa.net/blog/2024/jetpack-halloween-costume/">&lt;p&gt;Past month and a half my 4-year-old has been fixated with rockets and flying. At some point, I did the mistake of telling her to pretend our car was a rocket when we were going over a bridge. Now every time we&#x27;re going up a hill or over speed bumps she demands I drive faster to get &quot;lift-off&quot;.&lt;&#x2F;p&gt;
+&lt;p&gt;Since rockets and flying was all she could talk about, I got inspired to make her a jetpack for Halloween. Like the one that Skye has in her favourite cartoon (Paw Patrol).&lt;&#x2F;p&gt;
+&lt;p&gt;About a week later, I had finished the modelling in Freecad.&lt;&#x2F;p&gt;
+&lt;div class=&quot;image-gallery&quot;&gt;
+
+&lt;p&gt;&lt;img src=&quot;freecad-preview-1.png&quot; alt=&quot;Jetpack model render from top&quot; &#x2F;&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;img src=&quot;freecad-preview-2.png&quot; alt=&quot;Jetpack model render from bottom&quot; &#x2F;&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;img src=&quot;freecad-preview-3.png&quot; alt=&quot;Jetpack model render, wings collapsed&quot; &#x2F;&gt;&lt;&#x2F;p&gt;
+
+
+&lt;&#x2F;div&gt;
+&lt;p&gt;The plan was to add straps to it and wear it like a backpack. And if time allowed, add some LEDs into the thrusters for some light effects.&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;let-the-printing-begin&quot;&gt;Let the printing begin!&lt;&#x2F;h2&gt;
+&lt;p&gt;I had some old white PLA around, which I wanted to use up. That meant I had to budget time for the post-processing, I had about 2 weeks until Halloween. Seemed doable. Even when considering I hadn&#x27;t really done any post-processing of 3D prints before. I planned for 2 coats of primer, and ideally 2 coats of paint.&lt;&#x2F;p&gt;
+&lt;p&gt;The circular LEDs from AliExpress arrived suprisingly fast. I had only managed to print out about half of the pieces by that time. So, I dug out some Rasperry Pi Picos I had bought in bulk a few years before and started figuring out the light show.&lt;&#x2F;p&gt;
+&lt;video class=&quot;&quot; src=&quot;thruster-lights-test.webm&quot;aria-title=&quot;Test of the thruster lights&quot;controls&gt;&lt;&#x2F;video&gt;
+&lt;p&gt;Once the lights were sorted, printing of all the pieces had also finished. I could get started with the post-procesing.&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;sand-prime-repeat&quot;&gt;Sand, prime, repeat...&lt;&#x2F;h2&gt;
+&lt;p&gt;I started sanding, but quickly decided to switch to wet sanding, as there was too much plastic particles that were just getting gumbled up with the heat generated. This decision meant, that I had to also put aside time for the pieces to dry completely. I was already getting concious of the time that I had left. I thought, I&#x27;d speed up the drying process a bit, by chucking the sanded pieces into my filament dryer for a bit. &lt;em&gt;Only later I would come to learn of my hubris.&lt;&#x2F;em&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;Everything seemed to go well, but without prior experience doing this, I had no idea if I was right or if it was just wishful thinking. I did know that I would get a definitive answers once the first paint layer went on.&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;img src=&quot;https:&#x2F;&#x2F;www.roosmaa.net&#x2F;blog&#x2F;2024&#x2F;jetpack-halloween-costume&#x2F;first-layer-of-primer.jpg&quot; alt=&quot;The pieces with the primer applied&quot; &#x2F;&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;I applied the first layer of primer, and waited it to dry.&lt;&#x2F;p&gt;
+&lt;p&gt;For some reason I had picked up transparent primer for this. I guess, I thought it wouldn&#x27;t matter much, as the layer lines would be filled in regardless of what color it was. As soon as I started sanding again, I realised it would&#x27;ve been immensly helpful to see how much of the primer was being sanded off.&lt;&#x2F;p&gt;
+&lt;p&gt;Having finished the 2nd sanding pass, I again threw the pieces into my filament dryer for a bit. When I took them out, I noticed something.&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;oh&quot;&gt;Oh, ****!&lt;&#x2F;h2&gt;
+&lt;p&gt;Upon closer inspection, I realised what I was seeing. I had screwed up... bad! The pieces were deformed. All of the previous days of work, down the drain.&lt;&#x2F;p&gt;
+&lt;p&gt;I knew there was no way I could use these pieces for the final costume anymore, but I still wanted to see how well I had done with my sanding. Instead of applying the 2nd layer of primer, as I had planned, I painted them instead.&lt;&#x2F;p&gt;
+&lt;p&gt;Once the paint had dried, I saw that my sanding hadn&#x27;t been that great either. Even if they hadn&#x27;t gotten bent in the dryier, I most likely wouldn&#x27;t have been happy with the outcome.&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;img src=&quot;https:&#x2F;&#x2F;www.roosmaa.net&#x2F;blog&#x2F;2024&#x2F;jetpack-halloween-costume&#x2F;post-processing-failure.jpg&quot; alt=&quot;Image of the painted and deformed Jetpack&quot; &#x2F;&gt;&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;plan-b&quot;&gt;Plan B?!&lt;&#x2F;h2&gt;
+&lt;p&gt;I still had 4 days until Halloween. I had to figure something out. My daughter was already well aware what I was working on, so not delivering wasn&#x27;t an option. I didn&#x27;t have time or motivation to do post-processing again. Which left me with one option - getting new filament in correct colors.&lt;&#x2F;p&gt;
+&lt;p&gt;I ordered black and pink filament off of Amazon, and luckily they managed to deliver it the next day. I started printing everything again. After 48 hours of non-stop printing, it was done.&lt;&#x2F;p&gt;
+&lt;p&gt;Halloween of 2024 was saved.&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;img src=&quot;https:&#x2F;&#x2F;www.roosmaa.net&#x2F;blog&#x2F;2024&#x2F;jetpack-halloween-costume&#x2F;finished-jetpack.jpg&quot; alt=&quot;Image of the finished Jetpack&quot; &#x2F;&gt;&lt;&#x2F;p&gt;
+</description>
+      </item>
+    </channel>
+</rss>

@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"  lang="en" >
+<head>
+	<!-- 2026-02-23 Mon 13:53 -->
+	<meta charset="UTF-8" />
+	<meta name="description" content="" />
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
+	<meta name="theme-color" content="#4e6b1a" />
+		<meta name="theme-color" content="#c3e87f" media="(prefers-color-scheme:dark)" />
+	<title>Upcycled 8-bay disk station - Mart Roosmaa</title>
+	<link rel="canonical" href="https://www.roosmaa.net/blog/2024/upcycled-disk-station/" /><link rel="icon" type="image/png" href="https://www.roosmaa.net/favicon.png" />
+
+<link rel="apple-touch-icon" type="image/png" sizes="180x180" href="https://www.roosmaa.net/apple-touch-icon.png" />
+	<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext x='-.07em' y='.89em' font-size='90'%3E📗%3C/text%3E%3C/svg%3E">
+
+		
+			
+				<link rel="alternate" type="application/rss+xml" title="Mart Roosmaa - RSS Feed" href="https://www.roosmaa.net/rss.xml">
+			
+		
+			
+				<link rel="alternate" type="application/atom+xml" title="Mart Roosmaa - Atom Feed" href="https://www.roosmaa.net/atom.xml">
+			
+		
+    <style type="text/css">
+	:root {--accent-color: #4e6b1a;}[data-theme="dark"] {
+			--accent-color: #c3e87f;
+		}
+
+		@media (prefers-color-scheme: dark) {
+			:root:not([data-theme="light"]) {
+				--accent-color: #c3e87f;
+			}
+		}</style>
+
+			<link type="text/css" rel="stylesheet" href="https://www.roosmaa.net/style.css" />
+			<link type="text/css" rel="stylesheet" href="https://www.roosmaa.net/duckquill_mods.css" />
+			<link type="text/css" rel="stylesheet" href="https://www.roosmaa.net/image_gallery.css" />
+			<script type="text/javascript" defer  src="https://www.roosmaa.net/closable.js"></script>
+			<script type="text/javascript" defer  src="https://www.roosmaa.net/copy-button.js"></script>
+			<script type="text/javascript" defer  src="https://www.roosmaa.net/theme-switcher.js"></script>
+
+	<meta property="og:site_name" content="Mart Roosmaa" />
+	<meta property="og:title" content="Upcycled 8-bay disk station - Mart Roosmaa" />
+	<meta property="og:url" content="https://www.roosmaa.net/blog/2024/upcycled-disk-station/" />
+	<meta property="og:description" content="Repurposing an old HP server DL380 G9 backplane PCB for my homelab." /><meta property="og:image" content="https://www.roosmaa.net/card.png" /><meta property="og:locale" content="en_US" />
+</head>
+
+<body>
+
+		
+<header id="site-nav">
+	<nav>
+		<a href="#main-content" tabindex="0">
+			Skip to Main Content
+		</a>
+		<ul>
+			<li id="home">
+				<a href="https://www.roosmaa.net">
+					<i class="icon"></i>Mart Roosmaa</a>
+			</li>
+			<li class="divider"></li>
+					<li>
+						<a href="https://www.roosmaa.net/blog/">Blog</a>
+					</li>
+				<li id="theme-switcher">
+					<details class="closable">
+						<summary class="circle" title="Theme">
+							<i class="icon"></i>
+						</summary>
+						<ul>
+							<li>
+								<button class="circle" id="theme-light" title="Switch to Light Theme">
+									<i class="icon"></i>
+								</button>
+							</li>
+							<li>
+								<button class="circle" id="theme-dark" title="Switch to Dark Theme">
+									<i class="icon"></i>
+								</button>
+							</li>
+							<li>
+								<button class="circle" id="theme-system" title="Use System Theme">
+									<i class="icon"></i>
+								</button>
+							</li>
+						</ul>
+					</details>
+				</li><li id="feed">
+					<details class="closable">
+						<summary class="circle" title="Feed">
+							<i class="icon"></i>
+						</summary>
+						<ul>
+								<li>
+									<a href="https://www.roosmaa.net/rss.xml" rel="">RSS</a>
+								</li>
+								<li>
+									<a href="https://www.roosmaa.net/atom.xml" rel="">Atom</a>
+								</li></ul>
+					</details>
+				</li>
+		</ul>
+	</nav>
+</header>
+<main id="main-content">
+		<article><div id="heading"><p>
+				<small>
+					<time datetime=" 2024-11-15T00:00:00+00:00">Published on
+						November 15, 2024</time></small>
+			</p><h1>Upcycled 8-bay disk station</h1><p>
+				<small><span>6 minutes read</span><span> • </span></small>
+			</p>
+				<ul class="tags"><li><a class="tag" href="https://www.roosmaa.net/tags/homelab/">homelab</a></li><li><a class="tag" href="https://www.roosmaa.net/tags/workshop/">workshop</a></li><li><a class="tag" href="https://www.roosmaa.net/tags/3d-printing/">3d printing</a></li>
+				</ul>
+	</div>
+
+	<div id="buttons-container"><a id="go-to-top" href="#top" title="Go to Top"><i class="icon"></i></a></div><p>My <a href="https://www.roosmaa.net/blog/2024/hello-homelab/#longhorn-or-ceph">janky Ceph setup</a> with cheapest consumer grade SSDs started to get way slower and noticable than I had hoped.</p>
+<p>In terms of simplicity, I started thinking of moving all the disks to a single machine and sharing them out from there, i.e. a more traditional NAS box. This single machine would become the single-point of failure, but I think I can accept that.</p>
+<p>I was already looking at parts I would have to source to build this new machine that would allow me to hook up all the 6 SSDs to it, when on a whim I checked my desktop PC motherboard. To my surprise, the <a href="https://es.msi.com/Motherboard/H270-TOMAHAWK-ARCTIC/Specification" class="external">MSI H270 Tomahawk Artic</a> gaming motherboard had 6 SATA3 ports. And it even supported hot-swap.</p>
+<p>Without any further ado, I decided to not spend more money on new hardware and instead repurpose my desktop as the new homelab node for storage. After spending some time on figuring out how <a href="https://www.roosmaa.net/blog/2024/setting-up-zfs-on-talos/">ZSF on Talos</a> works, I soon got everything working.</p>
+<p><img src="https://www.roosmaa.net/blog/2024/upcycled-disk-station/drives-in-case.jpg" alt="Picture of all 6 drives mounted inside of the PC case" /></p>
+<p>I knew that I had to prepare for the inevitable future, when one of those cheap SSDs fails. And with all the drives mounted inside the case, replacing the faulty one would be an undertaking.</p>
+<h2 id="upcycle-a-backplane">Upcycle a backplane?</h2>
+<p>I got the wild idea that maybe I can find some cheap server backplane on eBay and repurpose it for my needs. Most used server parts are a bit harder to find (and more expensive) on EU eBay, so I didn't know what to expect.</p>
+<p>After some searching I managed to find a HP DL380 G9 backplane PCB for a very reasonable price of 10€. From the pictures, it looked like something that would fit the bill - it had two standard SFF-8087 ports, and a 6-pin molex connector for power (presumably).</p>
+<div class="image-gallery">
+
+<p><img src="hp-dl380-g9-backplane-1.jpg" alt="Front of the backplane" /></p>
+<p><img src="hp-dl380-g9-backplane-2.jpg" alt="Back of the backplane" /></p>
+<p><img src="hp-dl380-g9-backplane-3.jpg" alt="Back of the backplane, close-up" /></p>
+
+
+</div>
+<p>While I was waiting for the backplane to arrive, I did some preliminary research about it on the internet. Luckily someone already had mostly <a href="https://www.reddit.com/r/homelab/comments/hjj6sd/comment/fx6zbpw/" class="external">mapped out</a> the molex connector pins - 2x 12V, 2x GND and 2 unknown pins. According to <a href="https://www.truenas.com/community/threads/dl380-gen9-8sff-cage-747592-002-power-layout-connector.103064/#post-710074" class="external">another source</a>, one or the other of the 2 unknown pins are unconnected depending on where the backplane was in the original server.</p>
+<p>If these 2 unknown pins were some form of data pins, which were required to make this backplane work, I would be out of luck. It would be difficult to reverse engineer these without access to the original servers from where these backplanes were from. However, I was hoping they were optional or something simple, like pulling the voltage up/down to constant levels.</p>
+<p>Another big question mark for me was the caddy connectors below the SATA ports. In theory, based on what I could find on the internet, they are used to blink the LEDs on the front of the caddies on the front of the server. But the question lingering in my mind was, if they are also used as some sort of switch to indicate that the disk has been properly inserted. If that were the case, I would have to find a way to bypass that.</p>
+<p>As the main input voltage for this board was 12V, the easiest option would be to power it from the 12V PCIe connector that usually powers GPUs. Of course the connector on the backplane was not directly compatible with the PCIe connector. I would have to make my own cable. I ordered some sacrificial PCIe cables from AliExpress that I could splice together with the backplane cable that came with the backplane.</p>
+<h2 id="the-disk-station-is-born">The disk station is born</h2>
+<p>In the mean time, I could get started with designing an enclosure for the PCB. I wanted to mount it on top of my PC case, and make the disks easily swappable. As there were holes in the PCB for airflow, I added a grille to the enclosure design as well. Mostly because it looked better, but also just in case if I ever needed to quickly introduce some active cooling there.</p>
+<p><img src="https://www.roosmaa.net/blog/2024/upcycled-disk-station/freecad-design.png" alt="Freecad design for the disk station" /></p>
+<p>By the time the cables arrived from China, I had already finished 3d printing the enclosure and mounting the PCB in it.</p>
+<p>I spliced together the power cable, leaving the unknown pins floating. I verified with a multimeter that all the pins were connected to correct ones and was ready to test it out.</p>
+<p>I disconnected all the drives from the computer and connected the SATA ports from the motherboard to the SFF-8087 ports on the backplane, and connected the PCIe power connector from the PSU to the backplane. I powered up the computer. And... nothing blew up. The computer booted just fine.</p>
+<p>But the disks in the backplane weren't being recognized. I took out the multimeter again, and started probing. The backplane was getting 12V input voltage, and the it was bumping it down to 5V and 3.3V for the SATA connectors.</p>
+<p>Since the power seemed to be fine, it must've been something related to data. Either the 2 unknown pins or the caddy connectors, I thought. I disconnected the backplane from the computer and put the disks back as they were for the time being.</p>
+<p>I needed to do more research. I was looking up the datasheets for the chips on the backplane to get any hints for the unknown pins in the molex connector. Nothing suggested that these pins would cause the drives not to work. The caddy connectors seemed to be unlikely as well, as from the photos I could find online, the flex PCB inside the caddies seemed fairly simple, so I was guessing there's no chips on there and the caddy connectors drive the LEDs directly.</p>
+<p>Amidst my web searching, I came across a post on one forum, where I learned that SFF-8087 breakout cables exists in two flavours - forwards and backwards. Since it was my first time working with SFF-8087 format, I hadn't even considered this. It seemed like the most likely cause for my issues. I ordered the backwards cable that I needed, and waited.</p>
+<p>Once the new cable arrived, I hooked everything up again and this time, the drives were being recognized by the motherboard and everything worked. I'm quite happy how it turned out.</p>
+<div class="image-gallery">
+
+<p><img src="diskstation-front.jpg" alt="Completed disk station (front)" /></p>
+<p><img src="diskstation-back.jpg" alt="Completed disk station (back)" /></p>
+
+
+</div>
+</article><hr />
+	<nav id="post-nav"><a class="post-nav-item post-nav-prev" href="https:&#x2F;&#x2F;www.roosmaa.net&#x2F;blog&#x2F;2024&#x2F;jetpack-halloween-costume&#x2F;">
+				<div class="nav-arrow">Previous</div>
+				<span class="post-title">Jetpack Halloween costume for my daughter</span>
+			</a><a class="post-nav-item post-nav-next" href="https:&#x2F;&#x2F;www.roosmaa.net&#x2F;blog&#x2F;2025&#x2F;external-dns-technitium-webhook&#x2F;">
+				<div class="nav-arrow">Next</div>
+				<span class="post-title">ExternalDNS webhook for Technitium DNS</span>
+			</a></nav>
+		
+	<span id="copy-code-text" class="hidden">Copy Code</span>
+
+	</main>
+	<footer id="site-footer">
+			<p>&copy; Mart Roosmaa, 2026</p>
+		<p>
+			<small>Powered by <a class="link external" href="https://www.getzola.org" rel="">Zola</a> and <a class="link external" href="https://duckquill.daudix.one" rel="">Duckquill</a>
+			</small>
+		</p>
+		<ul id="socials">
+				<li>
+					<a href="https://linkedin.com/in/roosmaa" rel=" me" title="LinkedIn">
+						<i class="icon" style='--icon: url("data:image/svg+xml,%3Csvg role=&#x27;img&#x27; viewBox=&#x27;0 0 24 24&#x27; xmlns=&#x27;http:&#x2F;&#x2F;www.w3.org&#x2F;2000&#x2F;svg&#x27;%3E%3Ctitle%3ELinkedIn%3C&#x2F;title%3E%3Cpath d=&#x27;M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z&#x27;&#x2F;%3E%3C&#x2F;svg%3E")'></i>
+						<span>LinkedIn</span>
+					</a>
+				</li>
+				<li>
+					<a href="https://github.com/roosmaa" rel=" me" title="GitHub">
+						<i class="icon" style='--icon: url("data:image/svg+xml,%3Csvg role=&#x27;img&#x27; viewBox=&#x27;0 0 24 24&#x27; xmlns=&#x27;http:&#x2F;&#x2F;www.w3.org&#x2F;2000&#x2F;svg&#x27;%3E%3Ctitle%3EGitHub%3C&#x2F;title%3E%3Cpath d=&#x27;M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12&#x27;&#x2F;%3E%3C&#x2F;svg%3E")'></i>
+						<span>GitHub</span>
+					</a>
+				</li>
+				<li>
+					<a href="https://twitter.com/roosmaa" rel=" me" title="Twitter">
+						<i class="icon" style='--icon: url("data:image/svg+xml,%3Csvg role=&#x27;img&#x27; viewBox=&#x27;0 0 24 24&#x27; xmlns=&#x27;http:&#x2F;&#x2F;www.w3.org&#x2F;2000&#x2F;svg&#x27;%3E%3Ctitle%3ETwitter%3C&#x2F;title%3E%3Cpath d=&#x27;M21.543 7.104c.015.211.015.423.015.636 0 6.507-4.954 14.01-14.01 14.01v-.003A13.94 13.94 0 0 1 0 19.539a9.88 9.88 0 0 0 7.287-2.041 4.93 4.93 0 0 1-4.6-3.42 4.916 4.916 0 0 0 2.223-.084A4.926 4.926 0 0 1 .96 9.167v-.062a4.887 4.887 0 0 0 2.235.616A4.928 4.928 0 0 1 1.67 3.148 13.98 13.98 0 0 0 11.82 8.292a4.929 4.929 0 0 1 8.39-4.49 9.868 9.868 0 0 0 3.128-1.196 4.941 4.941 0 0 1-2.165 2.724A9.828 9.828 0 0 0 24 4.555a10.019 10.019 0 0 1-2.457 2.549z&#x27;&#x2F;%3E%3C&#x2F;svg%3E")'></i>
+						<span>Twitter</span>
+					</a>
+				</li>
+				<li>
+					<a href="https://bsky.app/profile/roosmaa.net" rel=" me" title="Bluesky">
+						<i class="icon" style='--icon: url("data:image/svg+xml,%3Csvg role=&#x27;img&#x27; viewBox=&#x27;0 0 24 24&#x27; xmlns=&#x27;http:&#x2F;&#x2F;www.w3.org&#x2F;2000&#x2F;svg&#x27;%3E%3Ctitle%3EBluesky%3C&#x2F;title%3E%3Cpath d=&#x27;M12 10.8c-1.087-2.114-4.046-6.053-6.798-7.995C2.566.944 1.561 1.266.902 1.565.139 1.908 0 3.08 0 3.768c0 .69.378 5.65.624 6.479.815 2.736 3.713 3.66 6.383 3.364.136-.02.275-.039.415-.056-.138.022-.276.04-.415.056-3.912.58-7.387 2.005-2.83 7.078 5.013 5.19 6.87-1.113 7.823-4.308.953 3.195 2.05 9.271 7.733 4.308 4.267-4.308 1.172-6.498-2.74-7.078a8.741 8.741 0 0 1-.415-.056c.14.017.279.036.415.056 2.67.297 5.568-.628 6.383-3.364.246-.828.624-5.79.624-6.478 0-.69-.139-1.861-.902-2.206-.659-.298-1.664-.62-4.3 1.24C16.046 4.748 13.087 8.687 12 10.8Z&#x27;&#x2F;%3E%3C&#x2F;svg%3E")'></i>
+						<span>Bluesky</span>
+					</a>
+				</li>
+		</ul>
+</footer>
+
+
+</body>
+</html>

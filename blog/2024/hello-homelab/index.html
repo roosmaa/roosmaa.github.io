@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"  lang="en" >
+<head>
+	<!-- 2026-02-23 Mon 13:53 -->
+	<meta charset="UTF-8" />
+	<meta name="description" content="" />
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
+	<meta name="theme-color" content="#4e6b1a" />
+		<meta name="theme-color" content="#c3e87f" media="(prefers-color-scheme:dark)" />
+	<title>Hello, Homelab! - Mart Roosmaa</title>
+	<link rel="canonical" href="https://www.roosmaa.net/blog/2024/hello-homelab/" /><link rel="icon" type="image/png" href="https://www.roosmaa.net/favicon.png" />
+
+<link rel="apple-touch-icon" type="image/png" sizes="180x180" href="https://www.roosmaa.net/apple-touch-icon.png" />
+	<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext x='-.07em' y='.89em' font-size='90'%3E📗%3C/text%3E%3C/svg%3E">
+
+		
+			
+				<link rel="alternate" type="application/rss+xml" title="Mart Roosmaa - RSS Feed" href="https://www.roosmaa.net/rss.xml">
+			
+		
+			
+				<link rel="alternate" type="application/atom+xml" title="Mart Roosmaa - Atom Feed" href="https://www.roosmaa.net/atom.xml">
+			
+		
+    <style type="text/css">
+	:root {--accent-color: #4e6b1a;}[data-theme="dark"] {
+			--accent-color: #c3e87f;
+		}
+
+		@media (prefers-color-scheme: dark) {
+			:root:not([data-theme="light"]) {
+				--accent-color: #c3e87f;
+			}
+		}</style>
+
+			<link type="text/css" rel="stylesheet" href="https://www.roosmaa.net/style.css" />
+			<link type="text/css" rel="stylesheet" href="https://www.roosmaa.net/duckquill_mods.css" />
+			<link type="text/css" rel="stylesheet" href="https://www.roosmaa.net/image_gallery.css" />
+			<script type="text/javascript" defer  src="https://www.roosmaa.net/closable.js"></script>
+			<script type="text/javascript" defer  src="https://www.roosmaa.net/copy-button.js"></script>
+			<script type="text/javascript" defer  src="https://www.roosmaa.net/theme-switcher.js"></script>
+
+	<meta property="og:site_name" content="Mart Roosmaa" />
+	<meta property="og:title" content="Hello, Homelab! - Mart Roosmaa" />
+	<meta property="og:url" content="https://www.roosmaa.net/blog/2024/hello-homelab/" />
+	<meta property="og:description" content="About a year ago, my homelab journey begun..." /><meta property="og:image" content="https:&#x2F;&#x2F;www.roosmaa.net&#x2F;processed_images&#x2F;pexels-brett-sayles-2881232.a2ae11b8947513e6.jpg" /><meta property="og:locale" content="en_US" />
+</head>
+
+<body>
+
+		
+<header id="site-nav">
+	<nav>
+		<a href="#main-content" tabindex="0">
+			Skip to Main Content
+		</a>
+		<ul>
+			<li id="home">
+				<a href="https://www.roosmaa.net">
+					<i class="icon"></i>Mart Roosmaa</a>
+			</li>
+			<li class="divider"></li>
+					<li>
+						<a href="https://www.roosmaa.net/blog/">Blog</a>
+					</li>
+				<li id="theme-switcher">
+					<details class="closable">
+						<summary class="circle" title="Theme">
+							<i class="icon"></i>
+						</summary>
+						<ul>
+							<li>
+								<button class="circle" id="theme-light" title="Switch to Light Theme">
+									<i class="icon"></i>
+								</button>
+							</li>
+							<li>
+								<button class="circle" id="theme-dark" title="Switch to Dark Theme">
+									<i class="icon"></i>
+								</button>
+							</li>
+							<li>
+								<button class="circle" id="theme-system" title="Use System Theme">
+									<i class="icon"></i>
+								</button>
+							</li>
+						</ul>
+					</details>
+				</li><li id="feed">
+					<details class="closable">
+						<summary class="circle" title="Feed">
+							<i class="icon"></i>
+						</summary>
+						<ul>
+								<li>
+									<a href="https://www.roosmaa.net/rss.xml" rel="">RSS</a>
+								</li>
+								<li>
+									<a href="https://www.roosmaa.net/atom.xml" rel="">Atom</a>
+								</li></ul>
+					</details>
+				</li>
+		</ul>
+	</nav>
+</header>
+<main id="main-content">
+		<article><div id="banner-container">
+			<img id="banner" class="full-bleed" src="https://www.roosmaa.net/blog/2024/hello-homelab/pexels-brett-sayles-2881232.jpg"  />
+		</div><div id="heading"><p>
+				<small>
+					<time datetime=" 2024-03-10T00:00:00+00:00">Published on
+						March 10, 2024</time></small>
+			</p><h1>Hello, Homelab!</h1><p>
+				<small><span>12 minutes read</span><span> • </span></small>
+			</p>
+				<ul class="tags"><li><a class="tag" href="https://www.roosmaa.net/tags/homelab/">homelab</a></li>
+				</ul>
+	</div>
+
+	<div id="buttons-container"><a id="go-to-top" href="#top" title="Go to Top"><i class="icon"></i></a></div><p>About a year ago, my homelab journey began. It was a combination of <a href="https://selfhosted.show/" class="external">the Self-Hosted Show</a> and <a href="https://thehomelab.show/" class="external">the Homelab Show</a> podcasts and <a href="https://www.youtube.com/@ServeTheHomeVideo" class="external">ServeTheHome</a> YouTube channel that gave me the push needed to take the plunge.</p>
+<p>I knew I wanted my lab to be Kubernetes based. I also wanted my lab to help me move some of my data off the cloud. I had noticed that Google Photos was corrupting some of the older pictures/videos, so I wanted to take ownership of keeping my data safe.</p>
+<p>As I wanted to learn more about running a Kubernetes cluster in HA configuration, I needed a minimum of 3 machines. I set up a saved search on eBay to find some old 1L PCs that would be decent for my needs. Most of the good deals were based in US or UK, with ridiculous shipping prices, though.</p>
+<p>After a while, I got a notification. A seller in France was selling a lot of 3x ThinkCentre m710q. The specs weren't to my liking, though. However, after some research online, I found that they could be upgraded to something decent. The most performant CPU for that system was the i7-7700T, which could be found in abundance on AliExpress. The M.2 slot originally meant for the Wi-Fi card could be used for a 2.5G NIC.</p>
+<p>The eBay listing for the ThinkCentre lot was a reasonable 230€. However, after upgrading the CPUs, maxing out the RAM, adding the 2.5G NICs and getting new NVMe drives it totalled up to around 1400€. Later in the year I would also get a bunch of additional 3.5" SSDs for storage, which pushed the total slightly over 2200€.</p>
+<h2 id="proxmox-and-ansible">Proxmox and Ansible</h2>
+<p>Proxmox was all the rage on all the podcasts I was listening to, so I wanted to take it for a spin as well. <a href="https://www.proxmox.com/" class="external">Proxmox</a> is a Debian based OS with a web UI for managing VMs easily. It was quick to set-up and soon I had some Debian VMs running <a href="https://k3s.io/" class="external">k3s</a>. As I was playing around with Proxmox (PVE), I learned about <a href="https://ceph.io/" class="external">Ceph</a> - a distributed storage solution. I set it up as well, in a completely un-advised way possible - using a partition on my NVMe drive alongside the OS partition. Tested out the <a href="https://pve.proxmox.com/wiki/High_Availability" class="external">high availability</a> feature in PVE and all the other major features as well.</p>
+<p>So far everything had been set-up manually. I knew, I wanted something codified, so that I could recreate everything quickly without having to remember all the little details that went into setting up the machines. I picked up <a href="https://www.ansible.com/" class="external">Ansible</a> for that.</p>
+<p>Over the next several weeks, I created Ansible playbooks for setting up everything I had done manually up until now. For both Proxmox and the VMs running k3s. There were several things with Ansible that didn't jive with me too much, one of which being the fairly slow playbook execution, even after having spent a bunch of time reworking everything to be fast, in theory. But I was willing to live with these grievances, I wasn't going to redo everything in some other system (Salt or Chef)...</p>
+<p>I planned to set up <a href="https://semaphoreui.com/" class="external">Semaphore</a> to execute the playbooks from Git in an automated way. That would allow me to update the lab from any of my computers. There was a challenge there. In certain conditions, my playbooks would automatically restart the Proxmox hosts. However, if the Semaphore is running in a VM on one of the hosts, the playbook would get interrupted. I kind of solved it by running Semaphore in a separate VM that was setup in PVE to do <a href="https://pve.proxmox.com/pve-docs/pve-admin-guide.html#qm_migration" class="external">live-migration</a>. That way, the Semaphore VM would survive the restarts of the underlying hosts. In the end, I wasn't happy with Semaphore features (at the time), and decided not to use it going forward.</p>
+<h2 id="going-bare-metal">Going bare metal</h2>
+<p>Out of all the things I wanted to do with my homelab, nothing had a hard-requirement on running in a VM. I decided to eliminate Proxmox from the equation all together and to double down on just Kubernetes. Less things to maintain seemed like a good idea.</p>
+<p>After reworking my Ansible playbooks a bit, I was ready to deploy bare metal Debian with k3s. I started to focus more on setting up the Kubernetes side of things. While doing that, I came across Talos and it piqued my interest.</p>
+<p><a href="https://www.talos.dev/" class="external">Talos</a> is a minimal and immutable Linux distribution meant for one thing and one thing only - running Kubernetes. By this time I had already found several ways to shoot myself in the foot managing Debian and k3s via Ansible and Talos seemed to not have these pain-points. After few experiments in VMs on my main computer, I was convinced it was time to redo my 3 ThinkCentre nodes yet again.</p>
+<p>Since Talos is immutable, I had no further use for Ansible and I stopped using it all together. Everything was now configured on the Kubernetes side with YAML.</p>
+<p>After some 8 months of running Talos I couldn't be happier. Whenever there's a new version, I just let Talos do a fresh installs on all the nodes and everything just works.</p>
+<h2 id="longhorn-or-ceph">Longhorn? or Ceph?</h2>
+<p>One of the first things I had to figure out in the fresh Kubernetes cluster was storage. Applications need a way to store user (my) data. <a href="https://longhorn.io/" class="external">Longhorn</a> was the most recommended option in various subreddits when I got started. It was supposed to be easy to setup and low maintenance.</p>
+<p>I did get it running fairly quickly. But since I had learned a bit about Ceph (while experimenting with PVE), I knew I wouldn't be happy with what Longhorn had to offer. For one, CephFS was something I wanted to make use of for shared storage between different services. And the sentiment online about Longhorn had slowly started to change. People were telling stories about how they had lost some of their data.</p>
+<p>I ended up going with <a href="https://rook.io/" class="external">Rook</a>, a Kubernetes operator for managing Ceph. It was a bit of a learning curve getting Rook up and running, but everything has worked fairly well since then. Some random troubleshooting and bug hunting, but none of which has ever brought down storage in my cluster. I'm amazed at the resilience.</p>
+<p>Having said that, it is not the fastest storage setup. And it's completely my own doing. I'm using the cheapest consumer SSDs I could get my hands on. And most of them are connected to the machines via USB, since I have no way to add additional SATA ports to my 1L boxes. <q>Over USB? What is he thinking!? He mad?</q> Hear me out, my primary use for Ceph storage is to store my personal data. It's more important for me to have the data safe rather than it being fast. I don't plan on running a database on Ceph backed block storage, so chasing speed is not something I want to do here.</p>
+<p>Each 1L box, has one internal SATA port available that I'm taking advantage of, and I'm also connecting 2x 3.5" drives over USB3. That's 3 drives per node and 9 drives in total. This allows me to store valuable data with 3x replication and less valuable data (e.g. DVD backups) with 4+2 EC (erasure coding). The EC gives me slightly more usable storage out of my disks.</p>
+<p><img src="https://www.roosmaa.net/blog/2024/hello-homelab/usb-ssds.jpg" alt="Rats nest of USB SSDs" /></p>
+<p>Over the past 6 months, I've simulated various failure conditions (kill power to a single host, pull the drive from the host, kill the data on the some of the drives) and Ceph has not complained one bit and has successfully kept my data safe.</p>
+<p>One thing to keep in mind, is that currently I'm only using slightly above 1% of the available storage. I'm certain that as the cluster fills up more, it will have a few more surprises for me in store. But by that time, I may already be running it on better hardware.</p>
+<p><em>And the databases?</em></p>
+<p>I'm very much Postgres biased when it comes to databases, and I can run that off of local-path storage. Postgres itself takes care of replication in a HA setup (shout out to <a href="https://cloudnative-pg.io/) operator which makes HA a breeze" class="external">CloudNativePG</a>. Combined that with regular backups to Ceph backed S3, I feel fairly confident there's not going to be any data loss there either.</p>
+<p>That said, none of the databases so far contain critical personal data. So, if I am proven wrong, it won't be too painful of a lesson.</p>
+<h2 id="all-the-other-kubernetes-cohabitants">All the other Kubernetes cohabitants</h2>
+<p>In addition to Ceph, I have a whole bunch of other software running in the cluster to make it "usable" for regular applications:</p>
+<ul>
+<li><a href="https://cilium.io/" class="external">Cilium</a> - for networking</li>
+<li><a href="https://argo-cd.readthedocs.io/en/stable/" class="external">ArgoCD</a> - for deploying software into the cluster</li>
+<li><a href="https://github.com/bitnami-labs/sealed-secrets" class="external">sealed-secrets</a> - for storing encrypted secrets in Git</li>
+<li><a href="https://openebs.io/" class="external">OpenEBS</a> - for local (host-path storage)</li>
+<li><a href="https://cert-manager.io/" class="external">cert-manager</a> - for generating LetsEncrypt SSL certs for services</li>
+<li><a href="https://github.com/kubernetes-sigs/external-dns" class="external">external-dns</a> - for automatically setting up DNS for services</li>
+<li><a href="https://github.com/kubernetes-sigs/node-feature-discovery" class="external">node-feature-discovery</a> &amp; <a href="https://github.com/intel/intel-device-plugins-for-kubernetes" class="external">intel-device-plugins</a> - for passing integrated GPUs into pods</li>
+<li><a href="https://traefik.io/" class="external">traefik</a> - as the main ingress controller</li>
+<li><a href="https://tailscale.com/" class="external">tailscale</a> - secure access to the cluster from anywhere</li>
+</ul>
+<p>And then there's the user-facing applications, of which there aren't many currently:</p>
+<ul>
+<li><a href="https://pi-hole.net/" class="external">Pi-hole</a> - provides DNS services for the home LAN and also on my phone via tailscale</li>
+<li><a href="https://www.traccar.org/" class="external">Traccar</a> - keeps track of my car with notifications for unexpected events (crashes, towing, etc)</li>
+<li><a href="https://jellyfin.org/" class="external">Jellyfin</a> - for enjoying backed up DVDs in a more modern way</li>
+<li><a href="https://syncthing.net/" class="external">Syncthing</a> - for syncing notes across devices &amp; keeping a copy of all the photos from the phones on the cluster</li>
+</ul>
+<h2 id="tunnelling-into-the-cluster">Tunnelling into the cluster</h2>
+<p>Even though most of my devices can access the services through tailscale, there are some trackers that need to connect to traccar via the public web. Ideally, I would've wanted to use Cloudflare Tunnels or similar services, but these only support HTTP traffic. The trackers, however, use various different binary protocols.</p>
+<p>The option I settled on, was to get the cheapest VPS I could find. Then installing just tailscale package and some firewall forwarding rules on it. By enabling automatic updates, it means this setup is effectively configure once and forget.</p>
+<h2 id="keeping-everything-up-to-date">Keeping everything up to date</h2>
+<p>I knew that I had to develop the habit of keeping most of the software as recent as possible. Otherwise, upgrading severely out of date software would become such a headache I would never want to do that.</p>
+<p>I started off keeping track of all the software in the cluster using <a href="https://newreleases.io/" class="external">NewReleases</a>. I would get a weekly digest of all the updates. After which, I have to find an evening where I would review the changelogs for potential dangers to look out for and update everything.</p>
+<p>A lot of the projects mentioned above, are very actively developed. This meant, that every Monday, the weekly email from NewReleases, was fairly feature-packed. It didn't take long, for the update ritual to become a chore I didn't look forward to. It was also one of the reasons why I effectively stopped deploying new services on the cluster, as I didn't want to increase the burden on myself.</p>
+<p>At some point, I decided to rethink how I approached updates. I restructured my repository containing the kubernetes manifests, and introduced <a href="https://docs.renovatebot.com/" class="external">Renovate</a>. Previously, I had to update all the dependencies at once to be able to delete the digest email from NewReleases. Otherwise, I would've lost track of some updates. With Renovate, each of the updates gets its own pull-request. And depending on the service &amp; the changelog I can decide to postpone certain updates for evenings where I have time to take care of them. The other - low risk - updates I can just merge and forget about.</p>
+<h2 id="is-it-all-worth-it">Is it all worth it?</h2>
+<p>It has been a somewhat bumpy road, so far. I've enjoyed learning about new things and tinkering with both the hardware and software side of running a homelab. What I didn't anticipate was the responsibilities of maintenance that come with running a "production" cluster - <q>Why is the internet down? Oh, the pi-hole pods are in a crashloop</q>. This has paced me from moving more of my life onto self-hosted services.</p>
+<p>But there's still plenty I want to explore, so I'm not throwing in my towel just yet. I'll take my time with it, and won't rush myself. And, in doing so, I hope I'll eventually reach the goal of having all my data on my own hardware.</p>
+<p><em>If you managed to get this far, this topic is probably something you're interested in. Drop me a DM on any of the social platforms I'm on, if you want to chat.</em></p>
+
+</article><hr />
+	<nav id="post-nav"><a class="post-nav-item post-nav-next" href="https:&#x2F;&#x2F;www.roosmaa.net&#x2F;blog&#x2F;2024&#x2F;routing-talos-cluster-traffic-over-specific-nic&#x2F;">
+				<div class="nav-arrow">Next</div>
+				<span class="post-title">Routing Talos cluster traffic over specific NIC</span>
+			</a></nav>
+		
+	<span id="copy-code-text" class="hidden">Copy Code</span>
+
+	</main>
+	<footer id="site-footer">
+			<p>&copy; Mart Roosmaa, 2026</p>
+		<p>
+			<small>Powered by <a class="link external" href="https://www.getzola.org" rel="">Zola</a> and <a class="link external" href="https://duckquill.daudix.one" rel="">Duckquill</a>
+			</small>
+		</p>
+		<ul id="socials">
+				<li>
+					<a href="https://linkedin.com/in/roosmaa" rel=" me" title="LinkedIn">
+						<i class="icon" style='--icon: url("data:image/svg+xml,%3Csvg role=&#x27;img&#x27; viewBox=&#x27;0 0 24 24&#x27; xmlns=&#x27;http:&#x2F;&#x2F;www.w3.org&#x2F;2000&#x2F;svg&#x27;%3E%3Ctitle%3ELinkedIn%3C&#x2F;title%3E%3Cpath d=&#x27;M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z&#x27;&#x2F;%3E%3C&#x2F;svg%3E")'></i>
+						<span>LinkedIn</span>
+					</a>
+				</li>
+				<li>
+					<a href="https://github.com/roosmaa" rel=" me" title="GitHub">
+						<i class="icon" style='--icon: url("data:image/svg+xml,%3Csvg role=&#x27;img&#x27; viewBox=&#x27;0 0 24 24&#x27; xmlns=&#x27;http:&#x2F;&#x2F;www.w3.org&#x2F;2000&#x2F;svg&#x27;%3E%3Ctitle%3EGitHub%3C&#x2F;title%3E%3Cpath d=&#x27;M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12&#x27;&#x2F;%3E%3C&#x2F;svg%3E")'></i>
+						<span>GitHub</span>
+					</a>
+				</li>
+				<li>
+					<a href="https://twitter.com/roosmaa" rel=" me" title="Twitter">
+						<i class="icon" style='--icon: url("data:image/svg+xml,%3Csvg role=&#x27;img&#x27; viewBox=&#x27;0 0 24 24&#x27; xmlns=&#x27;http:&#x2F;&#x2F;www.w3.org&#x2F;2000&#x2F;svg&#x27;%3E%3Ctitle%3ETwitter%3C&#x2F;title%3E%3Cpath d=&#x27;M21.543 7.104c.015.211.015.423.015.636 0 6.507-4.954 14.01-14.01 14.01v-.003A13.94 13.94 0 0 1 0 19.539a9.88 9.88 0 0 0 7.287-2.041 4.93 4.93 0 0 1-4.6-3.42 4.916 4.916 0 0 0 2.223-.084A4.926 4.926 0 0 1 .96 9.167v-.062a4.887 4.887 0 0 0 2.235.616A4.928 4.928 0 0 1 1.67 3.148 13.98 13.98 0 0 0 11.82 8.292a4.929 4.929 0 0 1 8.39-4.49 9.868 9.868 0 0 0 3.128-1.196 4.941 4.941 0 0 1-2.165 2.724A9.828 9.828 0 0 0 24 4.555a10.019 10.019 0 0 1-2.457 2.549z&#x27;&#x2F;%3E%3C&#x2F;svg%3E")'></i>
+						<span>Twitter</span>
+					</a>
+				</li>
+				<li>
+					<a href="https://bsky.app/profile/roosmaa.net" rel=" me" title="Bluesky">
+						<i class="icon" style='--icon: url("data:image/svg+xml,%3Csvg role=&#x27;img&#x27; viewBox=&#x27;0 0 24 24&#x27; xmlns=&#x27;http:&#x2F;&#x2F;www.w3.org&#x2F;2000&#x2F;svg&#x27;%3E%3Ctitle%3EBluesky%3C&#x2F;title%3E%3Cpath d=&#x27;M12 10.8c-1.087-2.114-4.046-6.053-6.798-7.995C2.566.944 1.561 1.266.902 1.565.139 1.908 0 3.08 0 3.768c0 .69.378 5.65.624 6.479.815 2.736 3.713 3.66 6.383 3.364.136-.02.275-.039.415-.056-.138.022-.276.04-.415.056-3.912.58-7.387 2.005-2.83 7.078 5.013 5.19 6.87-1.113 7.823-4.308.953 3.195 2.05 9.271 7.733 4.308 4.267-4.308 1.172-6.498-2.74-7.078a8.741 8.741 0 0 1-.415-.056c.14.017.279.036.415.056 2.67.297 5.568-.628 6.383-3.364.246-.828.624-5.79.624-6.478 0-.69-.139-1.861-.902-2.206-.659-.298-1.664-.62-4.3 1.24C16.046 4.748 13.087 8.687 12 10.8Z&#x27;&#x2F;%3E%3C&#x2F;svg%3E")'></i>
+						<span>Bluesky</span>
+					</a>
+				</li>
+		</ul>
+</footer>
+
+
+</body>
+</html>
