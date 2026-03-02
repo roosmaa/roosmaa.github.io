@@ -1,0 +1,643 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom" xml:lang="en">
+    <title>Mart Roosmaa</title>
+    <link rel="self" type="application/atom+xml" href="https://www.roosmaa.net/atom.xml"/>
+    <link rel="alternate" type="text/html" href="https://www.roosmaa.net"/>
+    <generator uri="https://www.getzola.org/">Zola</generator>
+    <updated>2025-12-24T00:00:00+00:00</updated>
+    <id>https://www.roosmaa.net/atom.xml</id>
+    <entry xml:lang="en">
+        <title>Ollama, LM Studio vs llama.cpp</title>
+        <published>2025-12-24T00:00:00+00:00</published>
+        <updated>2025-12-24T00:00:00+00:00</updated>
+        
+        <author>
+          <name>
+            
+              Mart Roosmaa
+            
+          </name>
+        </author>
+        
+        <link rel="alternate" type="text/html" href="https://www.roosmaa.net/blog/2025/ollama-lmstudio-llamacpp/"/>
+        <id>https://www.roosmaa.net/blog/2025/ollama-lmstudio-llamacpp/</id>
+        
+        <content type="html" xml:base="https://www.roosmaa.net/blog/2025/ollama-lmstudio-llamacpp/">&lt;p&gt;When getting started with local LLMs, one of the very first decisions you have to make is what kind of inference engine [1]  to use. There are quite a few out there, so which one is best? I&#x27;ll take a look at the three main options: LM Studio, Ollama and llama.cpp.&lt;&#x2F;p&gt;
+&lt;p&gt;[1] Inference engine: a program that gives life to the huge data files on HuggingFace.&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;lm-studio&quot;&gt;LM Studio&lt;&#x2F;h2&gt;
+&lt;p&gt;&lt;a href=&quot;https:&#x2F;&#x2F;lmstudio.ai&#x2F;&quot;&gt;LM Studio&lt;&#x2F;a&gt; is primarily a GUI application. It has a user-friendly interface for downloading the models and getting them running. It includes a chat interface where you can quickly converse with the loaded models.&lt;&#x2F;p&gt;
+&lt;p&gt;The models that LM Studio uses come from HuggingFace. In HuggingFace there&#x27;s &lt;a href=&quot;https:&#x2F;&#x2F;huggingface.co&#x2F;lmstudio-community&quot;&gt;LM Studio Community&lt;&#x2F;a&gt; which provides a set of curated versions for LM Studio.&lt;&#x2F;p&gt;
+&lt;p&gt;Behind the scenes, it uses llama.cpp to do the actual model inference - CPU, CUDA, ROCm, Vulkan &amp;amp; Metal are all supported. In addition to all the llama.cpp-based engines, there&#x27;s also an Apple&#x27;s MLX-based engine.&lt;&#x2F;p&gt;
+&lt;p&gt;LM Studio provides its own APIs in addition to an OpenAI-compatible API for interacting with the models programmatically, or from agents and IDEs that support OpenAI-compatible providers.&lt;&#x2F;p&gt;
+&lt;p&gt;It also has &lt;code&gt;lms&lt;&#x2F;code&gt; CLI utility for people who prefer to interact with it via the terminal.&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;ollama&quot;&gt;Ollama&lt;&#x2F;h2&gt;
+&lt;p&gt;&lt;a href=&quot;https:&#x2F;&#x2F;ollama.com&#x2F;&quot;&gt;Ollama&lt;&#x2F;a&gt; was trying to be the Docker of LLMs (before Docker started supporting running models itself). It is a CLI based application that gives users a very convenient way to download and run models. It focused on developers first, and successfully got itself integrated in various applications that end up being the more user-friendly frontends for it.&lt;&#x2F;p&gt;
+&lt;p&gt;The main innovation that Ollama introduced, in my opinion, is automatic model unloading based on VRAM usage. Ollama can keep as many models loaded as memory permits and will unload some of them only when needed to make room for the newly requested model.&lt;&#x2F;p&gt;
+&lt;p&gt;There are a few other ideas that they&#x27;ve adopted which differ from the status-quo. For example, Ollama introduced a Docker-like registry for models where files are stored and downloaded based on their SHA-256 hashes. HuggingFace has only recently implemented their &quot;registry&quot; support, so now it&#x27;s possible to pull GGUFs directly from HuggingFace.&lt;&#x2F;p&gt;
+&lt;p&gt;Then there is the Modelfile concept, which is meant to be a Dockerfile-inspired solution to defining models. To me, this seems like an unnecessary - or even wrong - abstraction. If you want to tweak parameters (e.g., &lt;code&gt;num_ctx&lt;&#x2F;code&gt;, &lt;code&gt;num_gpu&lt;&#x2F;code&gt;, &lt;code&gt;use_mmap&lt;&#x2F;code&gt;) to optimise a model for your hardware, you must create a new version of each model you use.&lt;&#x2F;p&gt;
+&lt;p&gt;What puzzles me the most is Ollama&#x27;s decision to replace the the de-facto standard Jinja templates (for chat messages) with Go templates. This means that if one wants to run a newer model on Ollama, you also have to port the Jinja template to Go template syntax.&lt;&#x2F;p&gt;
+&lt;p&gt;Choosing the quantization level for a model is also somewhat involved. Ollama defaults to Q4_K_M quantization level for all its published models. If you want to change that, you must first obtain the Modelfile of ollama&#x27;s model (for the chat template and parameters), then find a GGUF with the desired quantization on HuggingFace and finally combine the two.&lt;&#x2F;p&gt;
+&lt;p&gt;Ollama has been using llama.cpp behind the scenes as its inference engine, but it is slowly moving towards its own version. In the short term, I think, it won&#x27;t be great for users as the new engine has to play catch-up with llama.cpp; in the long term, however, it could be interesting.&lt;&#x2F;p&gt;
+&lt;p&gt;Although Ollama relies on llama.cpp, it lags behind in some areas. For example, Vulkan support is still experimental, and Ollama does not support partitioned GGUFs, which are becoming the norm on HuggingFace.&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;llama-cpp&quot;&gt;Llama.cpp&lt;&#x2F;h2&gt;
+&lt;p&gt;&lt;a href=&quot;https:&#x2F;&#x2F;github.com&#x2F;ggml-org&#x2F;llama.cpp&quot;&gt;Llama.cpp&lt;&#x2F;a&gt; is a C++ library that powers the two offerings above. In addition to being a library that others can build on, llama.cpp ships with &lt;a href=&quot;https:&#x2F;&#x2F;github.com&#x2F;ggml-org&#x2F;llama.cpp&#x2F;tree&#x2F;master&#x2F;tools&#x2F;server#readme&quot;&gt;llama-server&lt;&#x2F;a&gt; - a tool that lets you run models via OpenAI-compatible APIs, just like Ollama and LM Studio. There is also &lt;a href=&quot;https:&#x2F;&#x2F;github.com&#x2F;ggml-org&#x2F;LlamaBarn&quot;&gt;LlamaBarn&lt;&#x2F;a&gt;, a light-weight GUI for macOS.&lt;&#x2F;p&gt;
+&lt;p&gt;Llama.cpp is very actively developed, support for new models and optimizations for existing ones are added almost daily. The project does not have scheduled releases - what gets implemented (merged) is shipped automatically. This means that you always get the latest changes, but you may also encounter bugs and&#x2F;or regressions.&lt;&#x2F;p&gt;
+&lt;p&gt;Llama-server exposes a lot of knobs to tweak and supports various backends (the main ones being CUDA, ROCm, Vulkan, and CPU). This allows you to experiment with a lot of them to find the best configuration for your hardware. Most of these knobs are also exposed in Ollama &amp;amp; LM Studio, but not all.&lt;&#x2F;p&gt;
+&lt;p&gt;The easiest way to run llama-server is via their official Docker images. It is also available through winget, homebrew or nix package managers. Pre-built binaries can be downloaded from the Github releases.&lt;&#x2F;p&gt;
+&lt;p&gt;In general, llama-server is best if you want to run the latest models &amp;amp; get the most out of your hardware.&lt;&#x2F;p&gt;
+&lt;h3 id=&quot;side-note-reusing-models&quot;&gt;Side note: Reusing models&lt;&#x2F;h3&gt;
+&lt;p&gt;It is perfectly reasonable to use more than one of the tools above. One question that may arise is whether you can download the model once and run in different tools, instead of downloading the data multiple times.&lt;&#x2F;p&gt;
+&lt;p&gt;Between LM Studio and llama-server reusing the downloaded models is relatively simple. Some LM studio specific models may use Jinja template functions that don&#x27;t exist in llama.cpp, but in most cases the models are interchangeable.&lt;&#x2F;p&gt;
+&lt;p&gt;Ollama makes this more difficult. Even though it uses GGUFs behind the scenes, it stores everything by hash, so an extra step is required to translate to&#x2F;from the hash when trying to reuse data.&lt;&#x2F;p&gt;
+</content>
+        
+    </entry>
+    <entry xml:lang="en">
+        <title>ExternalDNS webhook for Technitium DNS</title>
+        <published>2025-02-20T00:00:00+00:00</published>
+        <updated>2025-02-20T00:00:00+00:00</updated>
+        
+        <author>
+          <name>
+            
+              Mart Roosmaa
+            
+          </name>
+        </author>
+        
+        <link rel="alternate" type="text/html" href="https://www.roosmaa.net/blog/2025/external-dns-technitium-webhook/"/>
+        <id>https://www.roosmaa.net/blog/2025/external-dns-technitium-webhook/</id>
+        
+        <content type="html" xml:base="https://www.roosmaa.net/blog/2025/external-dns-technitium-webhook/">&lt;p&gt;Outside, a massive storm is raging. I&#x27;m about to settle on the sofa for a late-night movie. The storm has knocked out the internet, making Netflix inaccessible. Fortunately, I have some movies saved on my local Jellyfin server that I&#x27;ve been meaning to watch.&lt;&#x2F;p&gt;
+&lt;p&gt;But... Android TV is unable to connect to it?! What&#x27;s going on? Oh noes! It&#x27;s the DNS. All the friendly domain names are defined on the public servers, and thus inaccessible in the current situation.&lt;&#x2F;p&gt;
+&lt;hr &#x2F;&gt;
+&lt;p&gt;Even though above is part fiction, the underlying issue was real. I had set up my lab to register all of its domains on the Cloudflare DNS. It was the most convenient way of doing it. &lt;a href=&quot;https:&#x2F;&#x2F;kubernetes-sigs.github.io&#x2F;external-dns&#x2F;latest&#x2F;&quot;&gt;ExternalDNS&lt;&#x2F;a&gt;, the project picking up all the domain names from the cluster and registering them, had Cloudflare DNS support built in.&lt;&#x2F;p&gt;
+&lt;p&gt;For my internal ad-blocking DNS server, I was running &lt;a href=&quot;https:&#x2F;&#x2F;pi-hole.net&#x2F;&quot;&gt;Pi-hole&lt;&#x2F;a&gt;. ExternalDNS also has built in support for Pi-hole, so I attempted to setup another instance of ExternalDNS to sync the internal domains to my Pi-hole. I found out, that Pi-hole doesn&#x27;t support wildcard domains, which I make use of in my lab. Sadly the Pi-hole provider didn&#x27;t support domain exclusions either, so there was no easy way for me to hack around this limitation.&lt;&#x2F;p&gt;
+&lt;p&gt;This led me to switch from Pi-hole to the &lt;a href=&quot;https:&#x2F;&#x2F;technitium.com&#x2F;dns&#x2F;&quot;&gt;Technitium DNS&lt;&#x2F;a&gt; server. I had already been eyeing Technitium for a while, so this gave me the push I needed. Technitium is a full-blown DNS server, with all the features that Pi-hole has and so much more (including support for wildcard domains). While ExternalDNS doesn&#x27;t natively support Technitium, it does offer webhooks as an extension point. After reviewing the APIs required for the webhook, I decided I could throw together Technitium support for it down the line.&lt;&#x2F;p&gt;
+&lt;p&gt;After some months, I finally got around to implementing that webhook to integrate Technitium DNS with ExternalDNS. I present to you &lt;a href=&quot;https:&#x2F;&#x2F;github.com&#x2F;roosmaa&#x2F;external-dns-technitium-webhook&#x2F;&quot;&gt;external-dns-technitium-webhook&lt;&#x2F;a&gt;.&lt;&#x2F;p&gt;
+&lt;p&gt;Here&#x27;s how I deploy it on my kubernetes cluster:&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;yaml&quot; style=&quot;background-color:#2b303b;color:#c0c5ce;&quot; class=&quot;language-yaml &quot;&gt;&lt;code class=&quot;language-yaml&quot; data-lang=&quot;yaml&quot;&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;apiVersion&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;apps&#x2F;v1
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;kind&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;Deployment
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;metadata&lt;&#x2F;span&gt;&lt;span&gt;:
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;name&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;external-dns-technitium-dns
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;namespace&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;external-dns
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;labels&lt;&#x2F;span&gt;&lt;span&gt;:
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;app.kubernetes.io&#x2F;name&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;external-dns
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;spec&lt;&#x2F;span&gt;&lt;span&gt;:
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;strategy&lt;&#x2F;span&gt;&lt;span&gt;:
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;type&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;Recreate
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;selector&lt;&#x2F;span&gt;&lt;span&gt;:
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;matchLabels&lt;&#x2F;span&gt;&lt;span&gt;:
+&lt;&#x2F;span&gt;&lt;span&gt;      &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;app.kubernetes.io&#x2F;name&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;external-dns
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;template&lt;&#x2F;span&gt;&lt;span&gt;:
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;metadata&lt;&#x2F;span&gt;&lt;span&gt;:
+&lt;&#x2F;span&gt;&lt;span&gt;      &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;labels&lt;&#x2F;span&gt;&lt;span&gt;:
+&lt;&#x2F;span&gt;&lt;span&gt;        &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;app.kubernetes.io&#x2F;name&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;external-dns
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;spec&lt;&#x2F;span&gt;&lt;span&gt;:
+&lt;&#x2F;span&gt;&lt;span&gt;      &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;serviceAccountName&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;external-dns
+&lt;&#x2F;span&gt;&lt;span&gt;      &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;containers&lt;&#x2F;span&gt;&lt;span&gt;:
+&lt;&#x2F;span&gt;&lt;span&gt;        - &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;name&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;external-dns
+&lt;&#x2F;span&gt;&lt;span&gt;          &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;image&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;registry.k8s.io&#x2F;external-dns&#x2F;external-dns
+&lt;&#x2F;span&gt;&lt;span&gt;          &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;args&lt;&#x2F;span&gt;&lt;span&gt;:
+&lt;&#x2F;span&gt;&lt;span&gt;            - &lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;--source=service
+&lt;&#x2F;span&gt;&lt;span&gt;            - &lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;--source=ingress
+&lt;&#x2F;span&gt;&lt;span&gt;            - &lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;--registry=noop
+&lt;&#x2F;span&gt;&lt;span&gt;            - &lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;--provider=webhook
+&lt;&#x2F;span&gt;&lt;span&gt;            - &lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;--webhook-provider-url=http:&#x2F;&#x2F;localhost:5580
+&lt;&#x2F;span&gt;&lt;span&gt;        - &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;name&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;webhook
+&lt;&#x2F;span&gt;&lt;span&gt;          &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;image&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;ghcr.io&#x2F;roosmaa&#x2F;external-dns-technitium-webhook
+&lt;&#x2F;span&gt;&lt;span&gt;          &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;env&lt;&#x2F;span&gt;&lt;span&gt;:
+&lt;&#x2F;span&gt;&lt;span&gt;            - &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;name&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;RUST_LOG
+&lt;&#x2F;span&gt;&lt;span&gt;              &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;value&lt;&#x2F;span&gt;&lt;span&gt;: &amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;external_dns_technitium_webhook=info&lt;&#x2F;span&gt;&lt;span&gt;&amp;quot;
+&lt;&#x2F;span&gt;&lt;span&gt;            - &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;name&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;LISTEN_PORT
+&lt;&#x2F;span&gt;&lt;span&gt;              &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;value&lt;&#x2F;span&gt;&lt;span&gt;: &amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;5580&lt;&#x2F;span&gt;&lt;span&gt;&amp;quot;
+&lt;&#x2F;span&gt;&lt;span&gt;            - &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;name&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;TECHNITIUM_URL
+&lt;&#x2F;span&gt;&lt;span&gt;              &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;value&lt;&#x2F;span&gt;&lt;span&gt;: &amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;http:&#x2F;&#x2F;technitium-dns-dashboard.dns.svc.cluster.local:5380&lt;&#x2F;span&gt;&lt;span&gt;&amp;quot;
+&lt;&#x2F;span&gt;&lt;span&gt;            - &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;name&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;ZONE
+&lt;&#x2F;span&gt;&lt;span&gt;              &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;value&lt;&#x2F;span&gt;&lt;span&gt;: &amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;roosmaa.net&lt;&#x2F;span&gt;&lt;span&gt;&amp;quot;
+&lt;&#x2F;span&gt;&lt;span&gt;          &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;envFrom&lt;&#x2F;span&gt;&lt;span&gt;:
+&lt;&#x2F;span&gt;&lt;span&gt;            - &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;secretRef&lt;&#x2F;span&gt;&lt;span&gt;:
+&lt;&#x2F;span&gt;&lt;span&gt;                &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;name&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;technitium-dns
+&lt;&#x2F;span&gt;&lt;span&gt;          &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;resources&lt;&#x2F;span&gt;&lt;span&gt;:
+&lt;&#x2F;span&gt;&lt;span&gt;            &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;requests&lt;&#x2F;span&gt;&lt;span&gt;:
+&lt;&#x2F;span&gt;&lt;span&gt;              &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;cpu&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;1m
+&lt;&#x2F;span&gt;&lt;span&gt;              &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;memory&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;10Mi
+&lt;&#x2F;span&gt;&lt;span&gt;          &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;readinessProbe&lt;&#x2F;span&gt;&lt;span&gt;:
+&lt;&#x2F;span&gt;&lt;span&gt;            &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;httpGet&lt;&#x2F;span&gt;&lt;span&gt;:
+&lt;&#x2F;span&gt;&lt;span&gt;              &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;port&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;5580
+&lt;&#x2F;span&gt;&lt;span&gt;              &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;path&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;&#x2F;health
+&lt;&#x2F;span&gt;&lt;span&gt;            &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;failureThreshold&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;1
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span&gt;---
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;kind&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;Secret
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;type&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;Opaque
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;apiVersion&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;v1
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;stringData&lt;&#x2F;span&gt;&lt;span&gt;:
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;TECHNITIUM_USERNAME&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;admin
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;TECHNITIUM_PASSWORD&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;admin
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;metadata&lt;&#x2F;span&gt;&lt;span&gt;:
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;name&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;technitium-dns
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;namespace&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;external-dns
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;The external-dns-technitium-webhook takes the following environment variables:&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;TECHNITIUM_URL&lt;&#x2F;code&gt; - the URL for the Technitium API; in my case it&#x27;s the cluster internal service hostname, with the default port.&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;code&gt;TECHNITIUM_USERNAME&lt;&#x2F;code&gt; - username for authenticating with Technitium API.&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;code&gt;TECHNITIUM_PASSWORD&lt;&#x2F;code&gt; - password for authenticating with Technitium API.&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;code&gt;ZONE&lt;&#x2F;code&gt; - the DNS zone that the connector is expected to use, it will automatically create a zone of Forward type, if it doesn&#x27;t exist in the server already.&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;code&gt;DOMAIN_FILTERS&lt;&#x2F;code&gt; - a list of domain suffixes to support, &lt;code&gt;;&lt;&#x2F;code&gt; separated (e.g., &lt;code&gt;.foo.roosmaa.net;.bar.roosmaa.net&lt;&#x2F;code&gt;).&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;p&gt;Be sure to check out the &lt;a href=&quot;https:&#x2F;&#x2F;github.com&#x2F;roosmaa&#x2F;external-dns-technitium-webhook&#x2F;?tab=readme-ov-file#readme&quot;&gt;GitHub repository&lt;&#x2F;a&gt; for up-to-date usage information on the project. And if there&#x27;s something missing, don&#x27;t hesitate to open a PR.&lt;&#x2F;p&gt;
+</content>
+        
+    </entry>
+    <entry xml:lang="en">
+        <title>Upcycled 8-bay disk station</title>
+        <published>2024-11-15T00:00:00+00:00</published>
+        <updated>2024-11-15T00:00:00+00:00</updated>
+        
+        <author>
+          <name>
+            
+              Mart Roosmaa
+            
+          </name>
+        </author>
+        
+        <link rel="alternate" type="text/html" href="https://www.roosmaa.net/blog/2024/upcycled-disk-station/"/>
+        <id>https://www.roosmaa.net/blog/2024/upcycled-disk-station/</id>
+        
+        <content type="html" xml:base="https://www.roosmaa.net/blog/2024/upcycled-disk-station/">&lt;p&gt;My &lt;a href=&quot;https:&#x2F;&#x2F;www.roosmaa.net&#x2F;blog&#x2F;2024&#x2F;hello-homelab&#x2F;#longhorn-or-ceph&quot;&gt;janky Ceph setup&lt;&#x2F;a&gt; with cheapest consumer grade SSDs started to get way slower and noticable than I had hoped.&lt;&#x2F;p&gt;
+&lt;p&gt;In terms of simplicity, I started thinking of moving all the disks to a single machine and sharing them out from there, i.e. a more traditional NAS box. This single machine would become the single-point of failure, but I think I can accept that.&lt;&#x2F;p&gt;
+&lt;p&gt;I was already looking at parts I would have to source to build this new machine that would allow me to hook up all the 6 SSDs to it, when on a whim I checked my desktop PC motherboard. To my surprise, the &lt;a href=&quot;https:&#x2F;&#x2F;es.msi.com&#x2F;Motherboard&#x2F;H270-TOMAHAWK-ARCTIC&#x2F;Specification&quot; class=&quot;external&quot;&gt;MSI H270 Tomahawk Artic&lt;&#x2F;a&gt; gaming motherboard had 6 SATA3 ports. And it even supported hot-swap.&lt;&#x2F;p&gt;
+&lt;p&gt;Without any further ado, I decided to not spend more money on new hardware and instead repurpose my desktop as the new homelab node for storage. After spending some time on figuring out how &lt;a href=&quot;https:&#x2F;&#x2F;www.roosmaa.net&#x2F;blog&#x2F;2024&#x2F;setting-up-zfs-on-talos&#x2F;&quot;&gt;ZSF on Talos&lt;&#x2F;a&gt; works, I soon got everything working.&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;img src=&quot;https:&#x2F;&#x2F;www.roosmaa.net&#x2F;blog&#x2F;2024&#x2F;upcycled-disk-station&#x2F;drives-in-case.jpg&quot; alt=&quot;Picture of all 6 drives mounted inside of the PC case&quot; &#x2F;&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;I knew that I had to prepare for the inevitable future, when one of those cheap SSDs fails. And with all the drives mounted inside the case, replacing the faulty one would be an undertaking.&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;upcycle-a-backplane&quot;&gt;Upcycle a backplane?&lt;&#x2F;h2&gt;
+&lt;p&gt;I got the wild idea that maybe I can find some cheap server backplane on eBay and repurpose it for my needs. Most used server parts are a bit harder to find (and more expensive) on EU eBay, so I didn&#x27;t know what to expect.&lt;&#x2F;p&gt;
+&lt;p&gt;After some searching I managed to find a HP DL380 G9 backplane PCB for a very reasonable price of 10€. From the pictures, it looked like something that would fit the bill - it had two standard SFF-8087 ports, and a 6-pin molex connector for power (presumably).&lt;&#x2F;p&gt;
+&lt;div class=&quot;image-gallery&quot;&gt;
+
+&lt;p&gt;&lt;img src=&quot;hp-dl380-g9-backplane-1.jpg&quot; alt=&quot;Front of the backplane&quot; &#x2F;&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;img src=&quot;hp-dl380-g9-backplane-2.jpg&quot; alt=&quot;Back of the backplane&quot; &#x2F;&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;img src=&quot;hp-dl380-g9-backplane-3.jpg&quot; alt=&quot;Back of the backplane, close-up&quot; &#x2F;&gt;&lt;&#x2F;p&gt;
+
+
+&lt;&#x2F;div&gt;
+&lt;p&gt;While I was waiting for the backplane to arrive, I did some preliminary research about it on the internet. Luckily someone already had mostly &lt;a href=&quot;https:&#x2F;&#x2F;www.reddit.com&#x2F;r&#x2F;homelab&#x2F;comments&#x2F;hjj6sd&#x2F;comment&#x2F;fx6zbpw&#x2F;&quot; class=&quot;external&quot;&gt;mapped out&lt;&#x2F;a&gt; the molex connector pins - 2x 12V, 2x GND and 2 unknown pins. According to &lt;a href=&quot;https:&#x2F;&#x2F;www.truenas.com&#x2F;community&#x2F;threads&#x2F;dl380-gen9-8sff-cage-747592-002-power-layout-connector.103064&#x2F;#post-710074&quot; class=&quot;external&quot;&gt;another source&lt;&#x2F;a&gt;, one or the other of the 2 unknown pins are unconnected depending on where the backplane was in the original server.&lt;&#x2F;p&gt;
+&lt;p&gt;If these 2 unknown pins were some form of data pins, which were required to make this backplane work, I would be out of luck. It would be difficult to reverse engineer these without access to the original servers from where these backplanes were from. However, I was hoping they were optional or something simple, like pulling the voltage up&#x2F;down to constant levels.&lt;&#x2F;p&gt;
+&lt;p&gt;Another big question mark for me was the caddy connectors below the SATA ports. In theory, based on what I could find on the internet, they are used to blink the LEDs on the front of the caddies on the front of the server. But the question lingering in my mind was, if they are also used as some sort of switch to indicate that the disk has been properly inserted. If that were the case, I would have to find a way to bypass that.&lt;&#x2F;p&gt;
+&lt;p&gt;As the main input voltage for this board was 12V, the easiest option would be to power it from the 12V PCIe connector that usually powers GPUs. Of course the connector on the backplane was not directly compatible with the PCIe connector. I would have to make my own cable. I ordered some sacrificial PCIe cables from AliExpress that I could splice together with the backplane cable that came with the backplane.&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;the-disk-station-is-born&quot;&gt;The disk station is born&lt;&#x2F;h2&gt;
+&lt;p&gt;In the mean time, I could get started with designing an enclosure for the PCB. I wanted to mount it on top of my PC case, and make the disks easily swappable. As there were holes in the PCB for airflow, I added a grille to the enclosure design as well. Mostly because it looked better, but also just in case if I ever needed to quickly introduce some active cooling there.&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;img src=&quot;https:&#x2F;&#x2F;www.roosmaa.net&#x2F;blog&#x2F;2024&#x2F;upcycled-disk-station&#x2F;freecad-design.png&quot; alt=&quot;Freecad design for the disk station&quot; &#x2F;&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;By the time the cables arrived from China, I had already finished 3d printing the enclosure and mounting the PCB in it.&lt;&#x2F;p&gt;
+&lt;p&gt;I spliced together the power cable, leaving the unknown pins floating. I verified with a multimeter that all the pins were connected to correct ones and was ready to test it out.&lt;&#x2F;p&gt;
+&lt;p&gt;I disconnected all the drives from the computer and connected the SATA ports from the motherboard to the SFF-8087 ports on the backplane, and connected the PCIe power connector from the PSU to the backplane. I powered up the computer. And... nothing blew up. The computer booted just fine.&lt;&#x2F;p&gt;
+&lt;p&gt;But the disks in the backplane weren&#x27;t being recognized. I took out the multimeter again, and started probing. The backplane was getting 12V input voltage, and the it was bumping it down to 5V and 3.3V for the SATA connectors.&lt;&#x2F;p&gt;
+&lt;p&gt;Since the power seemed to be fine, it must&#x27;ve been something related to data. Either the 2 unknown pins or the caddy connectors, I thought. I disconnected the backplane from the computer and put the disks back as they were for the time being.&lt;&#x2F;p&gt;
+&lt;p&gt;I needed to do more research. I was looking up the datasheets for the chips on the backplane to get any hints for the unknown pins in the molex connector. Nothing suggested that these pins would cause the drives not to work. The caddy connectors seemed to be unlikely as well, as from the photos I could find online, the flex PCB inside the caddies seemed fairly simple, so I was guessing there&#x27;s no chips on there and the caddy connectors drive the LEDs directly.&lt;&#x2F;p&gt;
+&lt;p&gt;Amidst my web searching, I came across a post on one forum, where I learned that SFF-8087 breakout cables exists in two flavours - forwards and backwards. Since it was my first time working with SFF-8087 format, I hadn&#x27;t even considered this. It seemed like the most likely cause for my issues. I ordered the backwards cable that I needed, and waited.&lt;&#x2F;p&gt;
+&lt;p&gt;Once the new cable arrived, I hooked everything up again and this time, the drives were being recognized by the motherboard and everything worked. I&#x27;m quite happy how it turned out.&lt;&#x2F;p&gt;
+&lt;div class=&quot;image-gallery&quot;&gt;
+
+&lt;p&gt;&lt;img src=&quot;diskstation-front.jpg&quot; alt=&quot;Completed disk station (front)&quot; &#x2F;&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;img src=&quot;diskstation-back.jpg&quot; alt=&quot;Completed disk station (back)&quot; &#x2F;&gt;&lt;&#x2F;p&gt;
+
+
+&lt;&#x2F;div&gt;</content>
+        
+    </entry>
+    <entry xml:lang="en">
+        <title>Jetpack Halloween costume for my daughter</title>
+        <published>2024-10-31T00:00:00+00:00</published>
+        <updated>2024-10-31T00:00:00+00:00</updated>
+        
+        <author>
+          <name>
+            
+              Mart Roosmaa
+            
+          </name>
+        </author>
+        
+        <link rel="alternate" type="text/html" href="https://www.roosmaa.net/blog/2024/jetpack-halloween-costume/"/>
+        <id>https://www.roosmaa.net/blog/2024/jetpack-halloween-costume/</id>
+        
+        <content type="html" xml:base="https://www.roosmaa.net/blog/2024/jetpack-halloween-costume/">&lt;p&gt;Past month and a half my 4-year-old has been fixated with rockets and flying. At some point, I did the mistake of telling her to pretend our car was a rocket when we were going over a bridge. Now every time we&#x27;re going up a hill or over speed bumps she demands I drive faster to get &quot;lift-off&quot;.&lt;&#x2F;p&gt;
+&lt;p&gt;Since rockets and flying was all she could talk about, I got inspired to make her a jetpack for Halloween. Like the one that Skye has in her favourite cartoon (Paw Patrol).&lt;&#x2F;p&gt;
+&lt;p&gt;About a week later, I had finished the modelling in Freecad.&lt;&#x2F;p&gt;
+&lt;div class=&quot;image-gallery&quot;&gt;
+
+&lt;p&gt;&lt;img src=&quot;freecad-preview-1.png&quot; alt=&quot;Jetpack model render from top&quot; &#x2F;&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;img src=&quot;freecad-preview-2.png&quot; alt=&quot;Jetpack model render from bottom&quot; &#x2F;&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;img src=&quot;freecad-preview-3.png&quot; alt=&quot;Jetpack model render, wings collapsed&quot; &#x2F;&gt;&lt;&#x2F;p&gt;
+
+
+&lt;&#x2F;div&gt;
+&lt;p&gt;The plan was to add straps to it and wear it like a backpack. And if time allowed, add some LEDs into the thrusters for some light effects.&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;let-the-printing-begin&quot;&gt;Let the printing begin!&lt;&#x2F;h2&gt;
+&lt;p&gt;I had some old white PLA around, which I wanted to use up. That meant I had to budget time for the post-processing, I had about 2 weeks until Halloween. Seemed doable. Even when considering I hadn&#x27;t really done any post-processing of 3D prints before. I planned for 2 coats of primer, and ideally 2 coats of paint.&lt;&#x2F;p&gt;
+&lt;p&gt;The circular LEDs from AliExpress arrived suprisingly fast. I had only managed to print out about half of the pieces by that time. So, I dug out some Rasperry Pi Picos I had bought in bulk a few years before and started figuring out the light show.&lt;&#x2F;p&gt;
+&lt;video class=&quot;&quot; src=&quot;thruster-lights-test.webm&quot;aria-title=&quot;Test of the thruster lights&quot;controls&gt;&lt;&#x2F;video&gt;
+&lt;p&gt;Once the lights were sorted, printing of all the pieces had also finished. I could get started with the post-procesing.&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;sand-prime-repeat&quot;&gt;Sand, prime, repeat...&lt;&#x2F;h2&gt;
+&lt;p&gt;I started sanding, but quickly decided to switch to wet sanding, as there was too much plastic particles that were just getting gumbled up with the heat generated. This decision meant, that I had to also put aside time for the pieces to dry completely. I was already getting concious of the time that I had left. I thought, I&#x27;d speed up the drying process a bit, by chucking the sanded pieces into my filament dryer for a bit. &lt;em&gt;Only later I would come to learn of my hubris.&lt;&#x2F;em&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;Everything seemed to go well, but without prior experience doing this, I had no idea if I was right or if it was just wishful thinking. I did know that I would get a definitive answers once the first paint layer went on.&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;img src=&quot;https:&#x2F;&#x2F;www.roosmaa.net&#x2F;blog&#x2F;2024&#x2F;jetpack-halloween-costume&#x2F;first-layer-of-primer.jpg&quot; alt=&quot;The pieces with the primer applied&quot; &#x2F;&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;I applied the first layer of primer, and waited it to dry.&lt;&#x2F;p&gt;
+&lt;p&gt;For some reason I had picked up transparent primer for this. I guess, I thought it wouldn&#x27;t matter much, as the layer lines would be filled in regardless of what color it was. As soon as I started sanding again, I realised it would&#x27;ve been immensly helpful to see how much of the primer was being sanded off.&lt;&#x2F;p&gt;
+&lt;p&gt;Having finished the 2nd sanding pass, I again threw the pieces into my filament dryer for a bit. When I took them out, I noticed something.&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;oh&quot;&gt;Oh, ****!&lt;&#x2F;h2&gt;
+&lt;p&gt;Upon closer inspection, I realised what I was seeing. I had screwed up... bad! The pieces were deformed. All of the previous days of work, down the drain.&lt;&#x2F;p&gt;
+&lt;p&gt;I knew there was no way I could use these pieces for the final costume anymore, but I still wanted to see how well I had done with my sanding. Instead of applying the 2nd layer of primer, as I had planned, I painted them instead.&lt;&#x2F;p&gt;
+&lt;p&gt;Once the paint had dried, I saw that my sanding hadn&#x27;t been that great either. Even if they hadn&#x27;t gotten bent in the dryier, I most likely wouldn&#x27;t have been happy with the outcome.&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;img src=&quot;https:&#x2F;&#x2F;www.roosmaa.net&#x2F;blog&#x2F;2024&#x2F;jetpack-halloween-costume&#x2F;post-processing-failure.jpg&quot; alt=&quot;Image of the painted and deformed Jetpack&quot; &#x2F;&gt;&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;plan-b&quot;&gt;Plan B?!&lt;&#x2F;h2&gt;
+&lt;p&gt;I still had 4 days until Halloween. I had to figure something out. My daughter was already well aware what I was working on, so not delivering wasn&#x27;t an option. I didn&#x27;t have time or motivation to do post-processing again. Which left me with one option - getting new filament in correct colors.&lt;&#x2F;p&gt;
+&lt;p&gt;I ordered black and pink filament off of Amazon, and luckily they managed to deliver it the next day. I started printing everything again. After 48 hours of non-stop printing, it was done.&lt;&#x2F;p&gt;
+&lt;p&gt;Halloween of 2024 was saved.&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;img src=&quot;https:&#x2F;&#x2F;www.roosmaa.net&#x2F;blog&#x2F;2024&#x2F;jetpack-halloween-costume&#x2F;finished-jetpack.jpg&quot; alt=&quot;Image of the finished Jetpack&quot; &#x2F;&gt;&lt;&#x2F;p&gt;
+</content>
+        
+    </entry>
+    <entry xml:lang="en">
+        <title>Setting up ZFS on Talos</title>
+        <published>2024-09-21T00:00:00+00:00</published>
+        <updated>2024-09-21T00:00:00+00:00</updated>
+        
+        <author>
+          <name>
+            
+              Mart Roosmaa
+            
+          </name>
+        </author>
+        
+        <link rel="alternate" type="text/html" href="https://www.roosmaa.net/blog/2024/setting-up-zfs-on-talos/"/>
+        <id>https://www.roosmaa.net/blog/2024/setting-up-zfs-on-talos/</id>
+        
+        <content type="html" xml:base="https://www.roosmaa.net/blog/2024/setting-up-zfs-on-talos/">&lt;p&gt;Talos, being an immutable distro, is amazing, but it does come with a caveat. When it&#x27;s time to deviate from the defaults, it involves some additional steps. Talos has extension support for those cases. There&#x27;s also a bunch of official&#x2F;community extensions ready to go. Rolling your own is also possible, but involves a bit of a learning curve.&lt;&#x2F;p&gt;
+&lt;p&gt;I wanted to convert one of my Kubernetes nodes into a ZFS-based storage box. Luckily for me, Talos has a community-maintained &lt;a href=&quot;https:&#x2F;&#x2F;github.com&#x2F;siderolabs&#x2F;extensions&#x2F;tree&#x2F;main&#x2F;storage&#x2F;zfs&quot; class=&quot;external&quot;&gt;ZFS extension&lt;&#x2F;a&gt; to get the ZFS kernel module and userland tools installed on the node. Unluckily, I wasn&#x27;t able to locate sufficient documentation about it to get it working on first try. After a bunch of trial and error (and head banging), I was able to get things figured out.&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;configuring-the-talos-node&quot;&gt;Configuring the Talos node&lt;&#x2F;h2&gt;
+&lt;p&gt;To customize the extensions included in the Talos node, one needs use a purpose built install images. There&#x27;s two options - using &lt;a href=&quot;https:&#x2F;&#x2F;factory.talos.dev&#x2F;&quot; class=&quot;external&quot;&gt;Talos Factory&lt;&#x2F;a&gt; (the easy way), or using &lt;a href=&quot;https:&#x2F;&#x2F;www.talos.dev&#x2F;v1.8&#x2F;talos-guides&#x2F;install&#x2F;boot-assets&#x2F;#imager&quot; class=&quot;external&quot;&gt;imager&lt;&#x2F;a&gt; to do it locally.&lt;&#x2F;p&gt;
+&lt;p&gt;Using Talos Factory web interface is very straightforward, just need to select the &lt;code&gt;siderolabs&#x2F;zfs&lt;&#x2F;code&gt; under the system extensions. Doing it in Yaml and using the HTTP API is as easy:&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;yaml&quot; style=&quot;background-color:#2b303b;color:#c0c5ce;&quot; class=&quot;language-yaml &quot;&gt;&lt;code class=&quot;language-yaml&quot; data-lang=&quot;yaml&quot;&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;customization&lt;&#x2F;span&gt;&lt;span&gt;:
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;systemExtensions&lt;&#x2F;span&gt;&lt;span&gt;:
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;officialExtensions&lt;&#x2F;span&gt;&lt;span&gt;:
+&lt;&#x2F;span&gt;&lt;span&gt;      - &lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;siderolabs&#x2F;zfs
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;Once you have the installation image, you can slot it into your Talos node configuration, like so:&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;yaml&quot; style=&quot;background-color:#2b303b;color:#c0c5ce;&quot; class=&quot;language-yaml &quot;&gt;&lt;code class=&quot;language-yaml&quot; data-lang=&quot;yaml&quot;&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;machine&lt;&#x2F;span&gt;&lt;span&gt;:
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;install&lt;&#x2F;span&gt;&lt;span&gt;:
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;image&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;https:&#x2F;&#x2F;factory.talos.dev&#x2F;image&#x2F;4dd8e3a8b6203d3c14f049da8db4d3bb0d6d3e70c5e89dfcc1e709e81914f63c&#x2F;v1.8.3&#x2F;metal-amd64.iso
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;But, turns out, that on it&#x27;s own is not enough to get everything working. This is the part that made me lose several hours. Even though the &lt;em&gt;zfs.ko&lt;&#x2F;em&gt; module is present on the file-system, it isn&#x27;t loaded in the kernel. In order to make that happen, one needs to tweak the node configuration once more and use the &lt;a href=&quot;https:&#x2F;&#x2F;www.talos.dev&#x2F;v1.8&#x2F;reference&#x2F;configuration&#x2F;v1alpha1&#x2F;config&#x2F;#Config.machine.kernel&quot; class=&quot;external&quot;&gt;machine.kernel.modules&lt;&#x2F;a&gt; list to explicitly include zfs.&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;yaml&quot; style=&quot;background-color:#2b303b;color:#c0c5ce;&quot; class=&quot;language-yaml &quot;&gt;&lt;code class=&quot;language-yaml&quot; data-lang=&quot;yaml&quot;&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;machine&lt;&#x2F;span&gt;&lt;span&gt;:
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;install&lt;&#x2F;span&gt;&lt;span&gt;:
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;image&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;https:&#x2F;&#x2F;factory.talos.dev&#x2F;image&#x2F;4dd8e3a8b6203d3c14f049da8db4d3bb0d6d3e70c5e89dfcc1e709e81914f63c&#x2F;v1.8.3&#x2F;metal-amd64.iso
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;kernel&lt;&#x2F;span&gt;&lt;span&gt;:
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;modules&lt;&#x2F;span&gt;&lt;span&gt;:
+&lt;&#x2F;span&gt;&lt;span&gt;      - &lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;zfs
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;After the above configuration has been &lt;a href=&quot;https:&#x2F;&#x2F;www.talos.dev&#x2F;v1.8&#x2F;reference&#x2F;cli&#x2F;#talosctl-apply-config&quot; class=&quot;external&quot;&gt;applied&lt;&#x2F;a&gt; to the node, the regular &lt;a href=&quot;https:&#x2F;&#x2F;www.talos.dev&#x2F;v1.8&#x2F;reference&#x2F;cli&#x2F;#talosctl-upgrade&quot; class=&quot;external&quot;&gt;upgrade&lt;&#x2F;a&gt; procedure will make everything ready for use.&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;accessing-the-zfs-utilities&quot;&gt;Accessing the ZFS utilities&lt;&#x2F;h2&gt;
+&lt;p&gt;Even though the siderolabs&#x2F;zfs extension includes the zfs tools (zfs, zpool, ...) on the node, using them is more involved as Talos doesn&#x27;t support executing adhoc commands on the hosts directly. You need a root shell container on the node and execute the tools in the correct kernel namespace.&lt;&#x2F;p&gt;
+&lt;p&gt;First, we need create a root shell that we can exec into. Depending on your needs it may be better to use DaemonSet to get the shell on to multiple nodes, but in case of a single node, we can just launch a simple Pod, like such:&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;yaml&quot; style=&quot;background-color:#2b303b;color:#c0c5ce;&quot; class=&quot;language-yaml &quot;&gt;&lt;code class=&quot;language-yaml&quot; data-lang=&quot;yaml&quot;&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;apiVersion&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;v1
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;kind&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;Pod
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;metadata&lt;&#x2F;span&gt;&lt;span&gt;:
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;name&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;zfs-shell
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;spec&lt;&#x2F;span&gt;&lt;span&gt;:
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;nodeName&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;TARGET_NODE_NAME &lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;# TODO
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;hostIPC&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;true
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;hostNetwork&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;true
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;hostPID&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;true
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;containers&lt;&#x2F;span&gt;&lt;span&gt;:
+&lt;&#x2F;span&gt;&lt;span&gt;    - &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;command&lt;&#x2F;span&gt;&lt;span&gt;: [&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;sleep&lt;&#x2F;span&gt;&lt;span&gt;&amp;quot;, &amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;infinity&lt;&#x2F;span&gt;&lt;span&gt;&amp;quot;]
+&lt;&#x2F;span&gt;&lt;span&gt;      &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;image&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;debian
+&lt;&#x2F;span&gt;&lt;span&gt;      &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;name&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;shell
+&lt;&#x2F;span&gt;&lt;span&gt;      &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;securityContext&lt;&#x2F;span&gt;&lt;span&gt;:
+&lt;&#x2F;span&gt;&lt;span&gt;        &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;privileged&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;true
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;Afterwards we can run zfs tools via the nsenter command like so:&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;bash&quot; style=&quot;background-color:#2b303b;color:#c0c5ce;&quot; class=&quot;language-bash &quot;&gt;&lt;code class=&quot;language-bash&quot; data-lang=&quot;bash&quot;&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;kubectl&lt;&#x2F;span&gt;&lt;span&gt; exec pod&#x2F;zfs-shell -- \
+&lt;&#x2F;span&gt;&lt;span&gt;  nsenter --mount=&#x2F;proc&#x2F;1&#x2F;ns&#x2F;mnt -- \
+&lt;&#x2F;span&gt;&lt;span&gt;  zpool status
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;h2 id=&quot;zfs-backed-persistent-volumes&quot;&gt;ZFS backed Persistent Volumes&lt;&#x2F;h2&gt;
+&lt;p&gt;Now we have a ZFS capable node in our cluster with a bunch of disks attached to it. To make this storage available in Kubernetes, we can &lt;a href=&quot;https:&#x2F;&#x2F;openebs.io&#x2F;docs&#x2F;user-guides&#x2F;local-storage-user-guide&#x2F;local-pv-zfs&#x2F;zfs-installation&quot; class=&quot;external&quot;&gt;install OpenEBS&lt;&#x2F;a&gt; and make use of its Local PV ZFS storage engine.&lt;&#x2F;p&gt;
+&lt;p&gt;First, we need to create the ZFS pool that will be used by OpenEBS. In my case, I had 6 disks and wanted to create a RAIDz2 pool on them.&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;bash&quot; style=&quot;background-color:#2b303b;color:#c0c5ce;&quot; class=&quot;language-bash &quot;&gt;&lt;code class=&quot;language-bash&quot; data-lang=&quot;bash&quot;&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;kubectl&lt;&#x2F;span&gt;&lt;span&gt; exec pod&#x2F;zfs-shell -- nsenter --mount=&#x2F;proc&#x2F;1&#x2F;ns&#x2F;mnt -- \
+&lt;&#x2F;span&gt;&lt;span&gt;  zpool create -m legacy -f zfspv-pool raidz2 \
+&lt;&#x2F;span&gt;&lt;span&gt;  &#x2F;dev&#x2F;disk&#x2F;by-id&#x2F;{DISK1,DISK2,DISK3,DISK4,DISK5,DISK6}
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;By default ZFS wants to mount the main pool filesystem under some directory in the host. Instead, we can use the &lt;code&gt;-m legacy&lt;&#x2F;code&gt; parameter to tell ZFS to leave the mounting to us. When OpenEBS is creating new filesystems in the pool, it is also using the legacy option, meaning there&#x27;s no requirement for the main pool to be mounted on the host side either.&lt;&#x2F;p&gt;
+&lt;p&gt;Once the pool is created, the OpenEBS can be easily &lt;a href=&quot;https:&#x2F;&#x2F;openebs.io&#x2F;docs&#x2F;quickstart-guide&#x2F;installation#installation-via-helm&quot; class=&quot;external&quot;&gt;installed via their Helm chart&lt;&#x2F;a&gt;. After which, some ZFS storage clases need to be defined that are suitable for your workloads. Below are two basic storage classes I use.&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;yaml&quot; style=&quot;background-color:#2b303b;color:#c0c5ce;&quot; class=&quot;language-yaml &quot;&gt;&lt;code class=&quot;language-yaml&quot; data-lang=&quot;yaml&quot;&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;# Storage class for random application files
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;apiVersion&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;storage.k8s.io&#x2F;v1
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;kind&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;StorageClass
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;metadata&lt;&#x2F;span&gt;&lt;span&gt;:
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;name&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;host-zfs-standard
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;provisioner&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;zfs.csi.openebs.io
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;allowVolumeExpansion&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;true
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;parameters&lt;&#x2F;span&gt;&lt;span&gt;:
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;recordsize&lt;&#x2F;span&gt;&lt;span&gt;: &amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;128k&lt;&#x2F;span&gt;&lt;span&gt;&amp;quot;
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;compression&lt;&#x2F;span&gt;&lt;span&gt;: &amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;lz4&lt;&#x2F;span&gt;&lt;span&gt;&amp;quot;
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;dedup&lt;&#x2F;span&gt;&lt;span&gt;: &amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;off&lt;&#x2F;span&gt;&lt;span&gt;&amp;quot;
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;fstype&lt;&#x2F;span&gt;&lt;span&gt;: &amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;zfs&lt;&#x2F;span&gt;&lt;span&gt;&amp;quot;
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;poolname&lt;&#x2F;span&gt;&lt;span&gt;: &amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;zfspv-pool&lt;&#x2F;span&gt;&lt;span&gt;&amp;quot;
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;# Use allowedTopologies: in case ZFS is only available
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;# on some of the nodes in the cluster.
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span&gt;---
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;# Storage class for file storage (documents, photos, videos, etc)
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;apiVersion&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;storage.k8s.io&#x2F;v1
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;kind&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;StorageClass
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;metadata&lt;&#x2F;span&gt;&lt;span&gt;:
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;name&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;host-zfs-files
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;provisioner&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;zfs.csi.openebs.io
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;allowVolumeExpansion&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;true
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;reclaimPolicy&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;Retain
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;parameters&lt;&#x2F;span&gt;&lt;span&gt;:
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;recordsize&lt;&#x2F;span&gt;&lt;span&gt;: &amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;1M&lt;&#x2F;span&gt;&lt;span&gt;&amp;quot;
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;compression&lt;&#x2F;span&gt;&lt;span&gt;: &amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;lz4&lt;&#x2F;span&gt;&lt;span&gt;&amp;quot;
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;dedup&lt;&#x2F;span&gt;&lt;span&gt;: &amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;off&lt;&#x2F;span&gt;&lt;span&gt;&amp;quot;
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;fstype&lt;&#x2F;span&gt;&lt;span&gt;: &amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;zfs&lt;&#x2F;span&gt;&lt;span&gt;&amp;quot;
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;shared&lt;&#x2F;span&gt;&lt;span&gt;: &amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;yes&lt;&#x2F;span&gt;&lt;span&gt;&amp;quot; &lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;# to enable ReadWriteMany access mode
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;poolname&lt;&#x2F;span&gt;&lt;span&gt;: &amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;zfspv-pool&lt;&#x2F;span&gt;&lt;span&gt;&amp;quot;
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;To enable taking snapshots of the ZFS backed PVs, the a volume snapshot class also needs to be defined.&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;yaml&quot; style=&quot;background-color:#2b303b;color:#c0c5ce;&quot; class=&quot;language-yaml &quot;&gt;&lt;code class=&quot;language-yaml&quot; data-lang=&quot;yaml&quot;&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;kind&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;VolumeSnapshotClass
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;apiVersion&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;snapshot.storage.k8s.io&#x2F;v1
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;metadata&lt;&#x2F;span&gt;&lt;span&gt;:
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;name&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;host-zfs-snapshot
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;driver&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;zfs.csi.openebs.io
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;deletionPolicy&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;Delete
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;h2 id=&quot;monitoring-with-netdata&quot;&gt;Monitoring with Netdata&lt;&#x2F;h2&gt;
+&lt;p&gt;The ZFS backed PVs should be usable now, but we&#x27;re effectively flying blind. When a disk fails, we wouldn&#x27;t know about it unless we manually checked the &lt;code&gt;zpool status&lt;&#x2F;code&gt; every so often. And if enough disks fail, it&#x27;s &lt;em&gt;sayonara&lt;&#x2F;em&gt; to our data.&lt;&#x2F;p&gt;
+&lt;p&gt;There are some Prometheus metrics exporters for ZFS, but I didn&#x27;t explore that avenue, as &lt;a href=&quot;https:&#x2F;&#x2F;www.netdata.cloud&#x2F;&quot; class=&quot;external&quot;&gt;Netdata&lt;&#x2F;a&gt; has built-in support for ZFS data. But it doesn&#x27;t work out of the box on Talos, due to the zpool command being difficult to access from the container.&lt;&#x2F;p&gt;
+&lt;p&gt;I ended up creating a small utility (&lt;a href=&quot;https:&#x2F;&#x2F;github.com&#x2F;roosmaa&#x2F;zfs-http-query)&quot; class=&quot;external&quot;&gt;zfs-http-query&lt;&#x2F;a&gt; that runs as a DaemonSet on the ZFS nodes and exposes zpool data via an unix socket. This allows pods that have access to that socket to query zfs data from an unprivileged container.&lt;&#x2F;p&gt;
+&lt;p&gt;With zfs-http-query in place, the Netdata Helm values.yaml can be updated to make the built in ZFS support work:&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;yaml&quot; style=&quot;background-color:#2b303b;color:#c0c5ce;&quot; class=&quot;language-yaml &quot;&gt;&lt;code class=&quot;language-yaml&quot; data-lang=&quot;yaml&quot;&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;child&lt;&#x2F;span&gt;&lt;span&gt;:
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;configs&lt;&#x2F;span&gt;&lt;span&gt;:
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;zfspool&lt;&#x2F;span&gt;&lt;span&gt;:
+&lt;&#x2F;span&gt;&lt;span&gt;      &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;enabled&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;true
+&lt;&#x2F;span&gt;&lt;span&gt;      &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;path&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;&#x2F;etc&#x2F;netdata&#x2F;go.d&#x2F;zfspool.conf
+&lt;&#x2F;span&gt;&lt;span&gt;      &lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;# tell netdata zfspool integration to use the zpool shim from zfs-http-query
+&lt;&#x2F;span&gt;&lt;span&gt;      &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;data&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;|
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;        jobs:
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;          - name: zfspool
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;            binary_path: &#x2F;opt&#x2F;zfs-http-query&#x2F;bin&#x2F;zpool
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;extraVolumeMounts&lt;&#x2F;span&gt;&lt;span&gt;:
+&lt;&#x2F;span&gt;&lt;span&gt;    - &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;name&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;opt-zfs-http-query
+&lt;&#x2F;span&gt;&lt;span&gt;      &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;mountPath&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;&#x2F;opt&#x2F;zfs-http-query
+&lt;&#x2F;span&gt;&lt;span&gt;      &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;readOnly&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;true
+&lt;&#x2F;span&gt;&lt;span&gt;    - &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;name&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;run-zfs-http-query
+&lt;&#x2F;span&gt;&lt;span&gt;      &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;mountPath&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;&#x2F;var&#x2F;run&#x2F;zfs-http-query
+&lt;&#x2F;span&gt;&lt;span&gt;      &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;readOnly&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;true
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;extraVolumes&lt;&#x2F;span&gt;&lt;span&gt;:
+&lt;&#x2F;span&gt;&lt;span&gt;    - &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;name&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;opt-zfs-http-query
+&lt;&#x2F;span&gt;&lt;span&gt;      &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;hostPath&lt;&#x2F;span&gt;&lt;span&gt;:
+&lt;&#x2F;span&gt;&lt;span&gt;        &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;type&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;DirectoryOrCreate
+&lt;&#x2F;span&gt;&lt;span&gt;        &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;path&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;&#x2F;opt&#x2F;zfs-http-query
+&lt;&#x2F;span&gt;&lt;span&gt;        &lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;# contains bin&#x2F;zpool and bin&#x2F;zfs shims
+&lt;&#x2F;span&gt;&lt;span&gt;    - &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;name&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;run-zfs-http-query
+&lt;&#x2F;span&gt;&lt;span&gt;      &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;hostPath&lt;&#x2F;span&gt;&lt;span&gt;:
+&lt;&#x2F;span&gt;&lt;span&gt;        &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;type&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;DirectoryOrCreate
+&lt;&#x2F;span&gt;&lt;span&gt;        &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;path&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;&#x2F;var&#x2F;run&#x2F;zfs-http-query
+&lt;&#x2F;span&gt;&lt;span&gt;        &lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;# contains the unix socket used by the shims
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;With this in place, Netdata will have access to the ZFS pool data and can show graphs about the pool health. And send notifications (if properly configured) when the pool state becomes degraded (i.e. a disk failure).&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;sharing-storage-across-nodes&quot;&gt;Sharing storage across nodes&lt;&#x2F;h2&gt;
+&lt;p&gt;Unlike Ceph or other distributed storage solutions, the OpenEBS based ZFS is tied to the node. When a PV is created on a certain node, it can only be accessed on that specifc node and it cannot be migrated to another node.&lt;&#x2F;p&gt;
+&lt;p&gt;I found &lt;a href=&quot;https:&#x2F;&#x2F;github.com&#x2F;kubernetes-csi&#x2F;csi-driver-smb&quot; class=&quot;external&quot;&gt;csi-driver-smb&lt;&#x2F;a&gt; project that allows mounting of samba shares to containers. This allows working around the above limitation by hosting a samba server on the ZFS enabled node, and using the csi-driver-smb to access it on any other node in the cluster.&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;img src=&quot;https:&#x2F;&#x2F;www.roosmaa.net&#x2F;blog&#x2F;2024&#x2F;setting-up-zfs-on-talos&#x2F;storage-diagram.svg#no-hover&quot; alt=&quot;Network storage diagram&quot; &#x2F;&gt;&lt;&#x2F;p&gt;
+</content>
+        
+    </entry>
+    <entry xml:lang="en">
+        <title>Unexpiring Tailscale auth keys</title>
+        <published>2024-09-09T00:00:00+00:00</published>
+        <updated>2024-11-28T00:00:00+00:00</updated>
+        
+        <author>
+          <name>
+            
+              Mart Roosmaa
+            
+          </name>
+        </author>
+        
+        <link rel="alternate" type="text/html" href="https://www.roosmaa.net/blog/2024/unexpiring-tailscale-auth-keys/"/>
+        <id>https://www.roosmaa.net/blog/2024/unexpiring-tailscale-auth-keys/</id>
+        
+        <content type="html" xml:base="https://www.roosmaa.net/blog/2024/unexpiring-tailscale-auth-keys/">&lt;p&gt;Ideally when running Tailscale in kubernetes one should use ephemeral configuration for the keys. But regular auth keys are limited to 90 days of validity, which means every 3 months someone would have to rotate them.&lt;&#x2F;p&gt;
+&lt;p&gt;In a small homelab, where keeping the software up to date already is a chore, I wouldn&#x27;t want to add another manual action to the todo list. A workaround I was using, was to use non-ephemeral auth keys combined with persistent volumes. This allowed me to log the workloads into Tailscale with a valid key, and as long as the state was persisted on Ceph, I wouldn&#x27;t have to worry.&lt;&#x2F;p&gt;
+&lt;p&gt;The problem was that my janky Ceph setup was turning out to be unbearably slow for &quot;critical&quot; components. Various issues with Tailscale pods starting up due to slow Ceph, or when I was abusing Ceph by restarting nodes randomly, the Tailscale containers would temporarily become unresponsive due to the underlying storage being unavailable.&lt;&#x2F;p&gt;
+&lt;p&gt;I wanted to move away from Ceph dependency in the Tailscale container, so I started looking for ways to remove the manual chore part from the key rotation.&lt;&#x2F;p&gt;
+&lt;p&gt;On various reddit posts and github issues Tailscale employees were referring people to the OAuth clients. The client secrets don&#x27;t expire and can be used to generate device auth keys on-demand.&lt;&#x2F;p&gt;
+&lt;p&gt;Initially I was thinking of creating a cronjob to update the Tailscale kubernetes Secret every hour or so. Or perhaps an easier version to setup init-container to do the auth key provisioning.&lt;&#x2F;p&gt;
+&lt;p&gt;But then I saw a small mention (on reddit) to a &quot;well hidden&quot; documentation page - &lt;a href=&quot;https:&#x2F;&#x2F;tailscale.com&#x2F;kb&#x2F;1215&#x2F;oauth-clients#registering-new-nodes-using-oauth-credentials&quot; class=&quot;external&quot;&gt;registering new nodes using OAuth credentials&lt;&#x2F;a&gt;. Turns out, the OAuth secrets can be used directly as device auth-keys. Meaning, the Tailscale app automatically provisions the auth keys without any extra effort on our side.&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;creating-the-oauth-client&quot;&gt;Creating the OAuth client&lt;&#x2F;h2&gt;
+&lt;p&gt;Unlike with auth keys, when using OAuth client to authenticate, Tailscale requires the usage of device tags. Let&#x27;s make sure that we have the approprate tag created in our &lt;a href=&quot;https:&#x2F;&#x2F;login.tailscale.com&#x2F;admin&#x2F;acls&#x2F;file&quot; class=&quot;external&quot;&gt;Tailscale ACL&lt;&#x2F;a&gt;. I&#x27;ve named my tag &lt;code&gt;tag:subnet-router&lt;&#x2F;code&gt;.&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;json&quot; style=&quot;background-color:#2b303b;color:#c0c5ce;&quot; class=&quot;language-json &quot;&gt;&lt;code class=&quot;language-json&quot; data-lang=&quot;json&quot;&gt;&lt;span&gt;{
+&lt;&#x2F;span&gt;&lt;span&gt;    &amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;tagOwners&lt;&#x2F;span&gt;&lt;span&gt;&amp;quot;: {
+&lt;&#x2F;span&gt;&lt;span&gt;        &amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;tag:subnet-routes&lt;&#x2F;span&gt;&lt;span&gt;&amp;quot;: [&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;autogroup:admin&lt;&#x2F;span&gt;&lt;span&gt;&amp;quot;]
+&lt;&#x2F;span&gt;&lt;span&gt;    }
+&lt;&#x2F;span&gt;&lt;span&gt;}
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;Then, under Settings → Tailnet Settings → &lt;a href=&quot;https:&#x2F;&#x2F;login.tailscale.com&#x2F;admin&#x2F;settings&#x2F;oauth&quot; class=&quot;external&quot;&gt;OAuth clients&lt;&#x2F;a&gt;, we can create the new OAuth client.&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;img src=&quot;https:&#x2F;&#x2F;www.roosmaa.net&#x2F;blog&#x2F;2024&#x2F;unexpiring-tailscale-auth-keys&#x2F;create-oauth-1.png&quot; alt=&quot;Screenshot of the Generate OAuth client... button&quot; &#x2F;&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;Pick a suitable description for the client, then choose the appropriate scopes. Since we&#x27;re only using the OAuth client to generate auth keys, we only need the &lt;code&gt;auth_keys&lt;&#x2F;code&gt; scope (read &amp;amp; write access for auth keys). Select the tag you want the device to get after it has authenticated.&lt;&#x2F;p&gt;
+&lt;blockquote class=&quot;note&quot;&gt;
+	&lt;p class=&quot;alert-title&quot;&gt;
+		&lt;i class=&quot;icon&quot;&gt;&lt;&#x2F;i&gt;Note&lt;&#x2F;p&gt;
+	&lt;p&gt;Tailscale updated their OAuth client scopes to be more granular on 14&#x2F;10&#x2F;2024. Before that, it used to be the &lt;code&gt;devices&lt;&#x2F;code&gt; scope that was needed for this.&lt;&#x2F;p&gt;
+
+&lt;&#x2F;blockquote&gt;
+&lt;p&gt;&lt;img src=&quot;https:&#x2F;&#x2F;www.roosmaa.net&#x2F;blog&#x2F;2024&#x2F;unexpiring-tailscale-auth-keys&#x2F;create-oauth-2.png#no-hover&quot; alt=&quot;Screenshot of entering a OAuth client description&quot; &#x2F;&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;img src=&quot;https:&#x2F;&#x2F;www.roosmaa.net&#x2F;blog&#x2F;2024&#x2F;unexpiring-tailscale-auth-keys&#x2F;create-oauth-3.png#no-hover&quot; alt=&quot;Screenshot of selecting the correct permission scopes&quot; &#x2F;&gt;&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;configuring-the-tailscale-docker-container&quot;&gt;Configuring the Tailscale docker container&lt;&#x2F;h2&gt;
+&lt;p&gt;If you&#x27;re using the Tailscale docker container, you need to pass in the OAuth client secret using the &lt;code&gt;TS_AUTHKEY&lt;&#x2F;code&gt; environment variable.&lt;&#x2F;p&gt;
+&lt;p&gt;There&#x27;s no dedicated environment variable for advertise tags, but the &lt;code&gt;TS_EXTRA_ARGS&lt;&#x2F;code&gt; can be used for that, by passing in the full command line flag, as such &lt;code&gt;--advertise-tags=tag:subnet-router&lt;&#x2F;code&gt;.&lt;&#x2F;p&gt;
+&lt;details&gt;
+&lt;summary&gt;Example of a kubernetes Deployment&lt;&#x2F;summary&gt;
+&lt;p&gt;This is how I deploy my subnet-router Tailscale containers on kubernetes. It retrieves the client secret from the &lt;code&gt;tailscale-subnet-router&lt;&#x2F;code&gt; secret.&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;yaml&quot; style=&quot;background-color:#2b303b;color:#c0c5ce;&quot; class=&quot;language-yaml &quot;&gt;&lt;code class=&quot;language-yaml&quot; data-lang=&quot;yaml&quot;&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;apiVersion&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;apps&#x2F;v1
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;kind&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;Deployment
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;metadata&lt;&#x2F;span&gt;&lt;span&gt;:
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;name&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;subnet-router
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;labels&lt;&#x2F;span&gt;&lt;span&gt;:
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;app&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;tailscale-subnet-router
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;spec&lt;&#x2F;span&gt;&lt;span&gt;:
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;replicas&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;2
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;selector&lt;&#x2F;span&gt;&lt;span&gt;:
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;matchLabels&lt;&#x2F;span&gt;&lt;span&gt;:
+&lt;&#x2F;span&gt;&lt;span&gt;      &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;app&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;tailscale-subnet-router
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;template&lt;&#x2F;span&gt;&lt;span&gt;:
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;metadata&lt;&#x2F;span&gt;&lt;span&gt;:
+&lt;&#x2F;span&gt;&lt;span&gt;      &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;name&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;subnet-router
+&lt;&#x2F;span&gt;&lt;span&gt;      &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;labels&lt;&#x2F;span&gt;&lt;span&gt;:
+&lt;&#x2F;span&gt;&lt;span&gt;        &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;app&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;tailscale-subnet-router
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;spec&lt;&#x2F;span&gt;&lt;span&gt;:
+&lt;&#x2F;span&gt;&lt;span&gt;      &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;containers&lt;&#x2F;span&gt;&lt;span&gt;:
+&lt;&#x2F;span&gt;&lt;span&gt;        - &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;name&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;tailscale
+&lt;&#x2F;span&gt;&lt;span&gt;          &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;image&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;ghcr.io&#x2F;tailscale&#x2F;tailscale:latest
+&lt;&#x2F;span&gt;&lt;span&gt;          &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;env&lt;&#x2F;span&gt;&lt;span&gt;:
+&lt;&#x2F;span&gt;&lt;span&gt;            - &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;name&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;TS_AUTHKEY
+&lt;&#x2F;span&gt;&lt;span&gt;              &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;valueFrom&lt;&#x2F;span&gt;&lt;span&gt;:
+&lt;&#x2F;span&gt;&lt;span&gt;                &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;secretKeyRef&lt;&#x2F;span&gt;&lt;span&gt;:
+&lt;&#x2F;span&gt;&lt;span&gt;                  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;name&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;tailscale-subnet-router
+&lt;&#x2F;span&gt;&lt;span&gt;                  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;key&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;authKey
+&lt;&#x2F;span&gt;&lt;span&gt;            - &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;name&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;TS_KUBE_SECRET
+&lt;&#x2F;span&gt;&lt;span&gt;              &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;value&lt;&#x2F;span&gt;&lt;span&gt;: &amp;quot;&amp;quot;
+&lt;&#x2F;span&gt;&lt;span&gt;            - &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;name&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;TS_USERSPACE
+&lt;&#x2F;span&gt;&lt;span&gt;              &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;value&lt;&#x2F;span&gt;&lt;span&gt;: &amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;true&lt;&#x2F;span&gt;&lt;span&gt;&amp;quot;
+&lt;&#x2F;span&gt;&lt;span&gt;            - &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;name&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;TS_ROUTES
+&lt;&#x2F;span&gt;&lt;span&gt;              &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;value&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;192.168.1.0&#x2F;24
+&lt;&#x2F;span&gt;&lt;span&gt;            - &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;name&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;TS_EXTRA_ARGS
+&lt;&#x2F;span&gt;&lt;span&gt;              &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;value&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;&amp;gt;-
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;                --advertise-tags=tag:subnet-router
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;                --accept-dns=false
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;                --stateful-filtering=true
+&lt;&#x2F;span&gt;&lt;span&gt;          &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;resources&lt;&#x2F;span&gt;&lt;span&gt;:
+&lt;&#x2F;span&gt;&lt;span&gt;            &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;requests&lt;&#x2F;span&gt;&lt;span&gt;:
+&lt;&#x2F;span&gt;&lt;span&gt;              &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;cpu&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;100m
+&lt;&#x2F;span&gt;&lt;span&gt;              &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;memory&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;50Mi
+&lt;&#x2F;span&gt;&lt;span&gt;          &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;securityContext&lt;&#x2F;span&gt;&lt;span&gt;:
+&lt;&#x2F;span&gt;&lt;span&gt;            &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;runAsUser&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;1000
+&lt;&#x2F;span&gt;&lt;span&gt;            &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;runAsGroup&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;1000
+&lt;&#x2F;span&gt;&lt;span&gt;      &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;securityContext&lt;&#x2F;span&gt;&lt;span&gt;:
+&lt;&#x2F;span&gt;&lt;span&gt;        &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;fsGroup&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;1000
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;&#x2F;details&gt;</content>
+        
+    </entry>
+    <entry xml:lang="en">
+        <title>Routing Talos cluster traffic over specific NIC</title>
+        <published>2024-09-02T00:00:00+00:00</published>
+        <updated>2024-09-02T00:00:00+00:00</updated>
+        
+        <author>
+          <name>
+            
+              Mart Roosmaa
+            
+          </name>
+        </author>
+        
+        <link rel="alternate" type="text/html" href="https://www.roosmaa.net/blog/2024/routing-talos-cluster-traffic-over-specific-nic/"/>
+        <id>https://www.roosmaa.net/blog/2024/routing-talos-cluster-traffic-over-specific-nic/</id>
+        
+        <content type="html" xml:base="https://www.roosmaa.net/blog/2024/routing-talos-cluster-traffic-over-specific-nic/">&lt;p&gt;When your Talos nodes have multiple NICs attached to them and you&#x27;d like to route in-cluster traffic over a specific NIC. How would you go about doing that?&lt;&#x2F;p&gt;
+&lt;p&gt;There can be various reasons why you&#x27;d want to do that. For example, the NICs available could offer differ speeds, and the with the given workloads it could make sense to route in-cluster traffic through the faster one and the egress over the slower one.&lt;&#x2F;p&gt;
+&lt;p&gt;The following assumes that Cilium CNI is being used and it has been configured to use &lt;a href=&quot;https:&#x2F;&#x2F;docs.cilium.io&#x2F;en&#x2F;stable&#x2F;network&#x2F;concepts&#x2F;routing&#x2F;#native-routing&quot; class=&quot;external&quot;&gt;native routing&lt;&#x2F;a&gt;. Let&#x27;s also assume that the nodes are configured in the following fashion:&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;img src=&quot;https:&#x2F;&#x2F;www.roosmaa.net&#x2F;blog&#x2F;2024&#x2F;routing-talos-cluster-traffic-over-specific-nic&#x2F;network-diagram.svg#no-hover&quot; alt=&quot;Network diagram&quot; &#x2F;&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;First, we need to assign both of the network interfaces IPs in different subnets. For example, all the NIC-1&#x27;s would get 10.1.0.0&#x2F;24 and all the NIC-2&#x27;s would get 10.2.0.0&#x2F;24. The Talos patch for the node-1 would be the following:&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;yaml&quot; style=&quot;background-color:#2b303b;color:#c0c5ce;&quot; class=&quot;language-yaml &quot;&gt;&lt;code class=&quot;language-yaml&quot; data-lang=&quot;yaml&quot;&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;machine&lt;&#x2F;span&gt;&lt;span&gt;:
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;network&lt;&#x2F;span&gt;&lt;span&gt;:
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;interfaces&lt;&#x2F;span&gt;&lt;span&gt;:
+&lt;&#x2F;span&gt;&lt;span&gt;      - &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;interface&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;enp0s31f6
+&lt;&#x2F;span&gt;&lt;span&gt;        &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;addresses&lt;&#x2F;span&gt;&lt;span&gt;:
+&lt;&#x2F;span&gt;&lt;span&gt;          - &lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;10.1.0.1&#x2F;24
+&lt;&#x2F;span&gt;&lt;span&gt;        &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;routes&lt;&#x2F;span&gt;&lt;span&gt;:
+&lt;&#x2F;span&gt;&lt;span&gt;          - &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;network&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;0.0.0.0&#x2F;0
+&lt;&#x2F;span&gt;&lt;span&gt;            &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;gateway&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;10.0.0.254 &lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;# for example
+&lt;&#x2F;span&gt;&lt;span&gt;      - &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;interface&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;enp2s0
+&lt;&#x2F;span&gt;&lt;span&gt;        &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;addresses&lt;&#x2F;span&gt;&lt;span&gt;:
+&lt;&#x2F;span&gt;&lt;span&gt;          - &lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;10.2.0.1&#x2F;24
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;At this point, the nodes are reachable to each other via either of the links. The traffic may or may not flow through your desired NIC. To make it explicit, we need to tell kubelet which of the subnets it is meant to use. We can do that with the following patch file:&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;yaml&quot; style=&quot;background-color:#2b303b;color:#c0c5ce;&quot; class=&quot;language-yaml &quot;&gt;&lt;code class=&quot;language-yaml&quot; data-lang=&quot;yaml&quot;&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;machine&lt;&#x2F;span&gt;&lt;span&gt;:
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;kubelet&lt;&#x2F;span&gt;&lt;span&gt;:
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;nodeIP&lt;&#x2F;span&gt;&lt;span&gt;:
+&lt;&#x2F;span&gt;&lt;span&gt;      &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;validSubnets&lt;&#x2F;span&gt;&lt;span&gt;:
+&lt;&#x2F;span&gt;&lt;span&gt;        - &lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;10.2.0.0&#x2F;24
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;And that&#x27;s it. After applying the configuration to nodes, the in-cluster traffic will now use NIC-2 and all the egress traffic will get routed via NIC-1. It can be verified with &lt;code&gt;talosctl pcap&lt;&#x2F;code&gt; command.&lt;&#x2F;p&gt;
+</content>
+        
+    </entry>
+    <entry xml:lang="en">
+        <title>Hello, Homelab!</title>
+        <published>2024-03-10T00:00:00+00:00</published>
+        <updated>2024-03-10T00:00:00+00:00</updated>
+        
+        <author>
+          <name>
+            
+              Mart Roosmaa
+            
+          </name>
+        </author>
+        
+        <link rel="alternate" type="text/html" href="https://www.roosmaa.net/blog/2024/hello-homelab/"/>
+        <id>https://www.roosmaa.net/blog/2024/hello-homelab/</id>
+        
+        <content type="html" xml:base="https://www.roosmaa.net/blog/2024/hello-homelab/">&lt;p&gt;About a year ago, my homelab journey began. It was a combination of &lt;a href=&quot;https:&#x2F;&#x2F;selfhosted.show&#x2F;&quot; class=&quot;external&quot;&gt;the Self-Hosted Show&lt;&#x2F;a&gt; and &lt;a href=&quot;https:&#x2F;&#x2F;thehomelab.show&#x2F;&quot; class=&quot;external&quot;&gt;the Homelab Show&lt;&#x2F;a&gt; podcasts and &lt;a href=&quot;https:&#x2F;&#x2F;www.youtube.com&#x2F;@ServeTheHomeVideo&quot; class=&quot;external&quot;&gt;ServeTheHome&lt;&#x2F;a&gt; YouTube channel that gave me the push needed to take the plunge.&lt;&#x2F;p&gt;
+&lt;p&gt;I knew I wanted my lab to be Kubernetes based. I also wanted my lab to help me move some of my data off the cloud. I had noticed that Google Photos was corrupting some of the older pictures&#x2F;videos, so I wanted to take ownership of keeping my data safe.&lt;&#x2F;p&gt;
+&lt;p&gt;As I wanted to learn more about running a Kubernetes cluster in HA configuration, I needed a minimum of 3 machines. I set up a saved search on eBay to find some old 1L PCs that would be decent for my needs. Most of the good deals were based in US or UK, with ridiculous shipping prices, though.&lt;&#x2F;p&gt;
+&lt;p&gt;After a while, I got a notification. A seller in France was selling a lot of 3x ThinkCentre m710q. The specs weren&#x27;t to my liking, though. However, after some research online, I found that they could be upgraded to something decent. The most performant CPU for that system was the i7-7700T, which could be found in abundance on AliExpress. The M.2 slot originally meant for the Wi-Fi card could be used for a 2.5G NIC.&lt;&#x2F;p&gt;
+&lt;p&gt;The eBay listing for the ThinkCentre lot was a reasonable 230€. However, after upgrading the CPUs, maxing out the RAM, adding the 2.5G NICs and getting new NVMe drives it totalled up to around 1400€. Later in the year I would also get a bunch of additional 3.5&quot; SSDs for storage, which pushed the total slightly over 2200€.&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;proxmox-and-ansible&quot;&gt;Proxmox and Ansible&lt;&#x2F;h2&gt;
+&lt;p&gt;Proxmox was all the rage on all the podcasts I was listening to, so I wanted to take it for a spin as well. &lt;a href=&quot;https:&#x2F;&#x2F;www.proxmox.com&#x2F;&quot; class=&quot;external&quot;&gt;Proxmox&lt;&#x2F;a&gt; is a Debian based OS with a web UI for managing VMs easily. It was quick to set-up and soon I had some Debian VMs running &lt;a href=&quot;https:&#x2F;&#x2F;k3s.io&#x2F;&quot; class=&quot;external&quot;&gt;k3s&lt;&#x2F;a&gt;. As I was playing around with Proxmox (PVE), I learned about &lt;a href=&quot;https:&#x2F;&#x2F;ceph.io&#x2F;&quot; class=&quot;external&quot;&gt;Ceph&lt;&#x2F;a&gt; - a distributed storage solution. I set it up as well, in a completely un-advised way possible - using a partition on my NVMe drive alongside the OS partition. Tested out the &lt;a href=&quot;https:&#x2F;&#x2F;pve.proxmox.com&#x2F;wiki&#x2F;High_Availability&quot; class=&quot;external&quot;&gt;high availability&lt;&#x2F;a&gt; feature in PVE and all the other major features as well.&lt;&#x2F;p&gt;
+&lt;p&gt;So far everything had been set-up manually. I knew, I wanted something codified, so that I could recreate everything quickly without having to remember all the little details that went into setting up the machines. I picked up &lt;a href=&quot;https:&#x2F;&#x2F;www.ansible.com&#x2F;&quot; class=&quot;external&quot;&gt;Ansible&lt;&#x2F;a&gt; for that.&lt;&#x2F;p&gt;
+&lt;p&gt;Over the next several weeks, I created Ansible playbooks for setting up everything I had done manually up until now. For both Proxmox and the VMs running k3s. There were several things with Ansible that didn&#x27;t jive with me too much, one of which being the fairly slow playbook execution, even after having spent a bunch of time reworking everything to be fast, in theory. But I was willing to live with these grievances, I wasn&#x27;t going to redo everything in some other system (Salt or Chef)...&lt;&#x2F;p&gt;
+&lt;p&gt;I planned to set up &lt;a href=&quot;https:&#x2F;&#x2F;semaphoreui.com&#x2F;&quot; class=&quot;external&quot;&gt;Semaphore&lt;&#x2F;a&gt; to execute the playbooks from Git in an automated way. That would allow me to update the lab from any of my computers. There was a challenge there. In certain conditions, my playbooks would automatically restart the Proxmox hosts. However, if the Semaphore is running in a VM on one of the hosts, the playbook would get interrupted. I kind of solved it by running Semaphore in a separate VM that was setup in PVE to do &lt;a href=&quot;https:&#x2F;&#x2F;pve.proxmox.com&#x2F;pve-docs&#x2F;pve-admin-guide.html#qm_migration&quot; class=&quot;external&quot;&gt;live-migration&lt;&#x2F;a&gt;. That way, the Semaphore VM would survive the restarts of the underlying hosts. In the end, I wasn&#x27;t happy with Semaphore features (at the time), and decided not to use it going forward.&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;going-bare-metal&quot;&gt;Going bare metal&lt;&#x2F;h2&gt;
+&lt;p&gt;Out of all the things I wanted to do with my homelab, nothing had a hard-requirement on running in a VM. I decided to eliminate Proxmox from the equation all together and to double down on just Kubernetes. Less things to maintain seemed like a good idea.&lt;&#x2F;p&gt;
+&lt;p&gt;After reworking my Ansible playbooks a bit, I was ready to deploy bare metal Debian with k3s. I started to focus more on setting up the Kubernetes side of things. While doing that, I came across Talos and it piqued my interest.&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;a href=&quot;https:&#x2F;&#x2F;www.talos.dev&#x2F;&quot; class=&quot;external&quot;&gt;Talos&lt;&#x2F;a&gt; is a minimal and immutable Linux distribution meant for one thing and one thing only - running Kubernetes. By this time I had already found several ways to shoot myself in the foot managing Debian and k3s via Ansible and Talos seemed to not have these pain-points. After few experiments in VMs on my main computer, I was convinced it was time to redo my 3 ThinkCentre nodes yet again.&lt;&#x2F;p&gt;
+&lt;p&gt;Since Talos is immutable, I had no further use for Ansible and I stopped using it all together. Everything was now configured on the Kubernetes side with YAML.&lt;&#x2F;p&gt;
+&lt;p&gt;After some 8 months of running Talos I couldn&#x27;t be happier. Whenever there&#x27;s a new version, I just let Talos do a fresh installs on all the nodes and everything just works.&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;longhorn-or-ceph&quot;&gt;Longhorn? or Ceph?&lt;&#x2F;h2&gt;
+&lt;p&gt;One of the first things I had to figure out in the fresh Kubernetes cluster was storage. Applications need a way to store user (my) data. &lt;a href=&quot;https:&#x2F;&#x2F;longhorn.io&#x2F;&quot; class=&quot;external&quot;&gt;Longhorn&lt;&#x2F;a&gt; was the most recommended option in various subreddits when I got started. It was supposed to be easy to setup and low maintenance.&lt;&#x2F;p&gt;
+&lt;p&gt;I did get it running fairly quickly. But since I had learned a bit about Ceph (while experimenting with PVE), I knew I wouldn&#x27;t be happy with what Longhorn had to offer. For one, CephFS was something I wanted to make use of for shared storage between different services. And the sentiment online about Longhorn had slowly started to change. People were telling stories about how they had lost some of their data.&lt;&#x2F;p&gt;
+&lt;p&gt;I ended up going with &lt;a href=&quot;https:&#x2F;&#x2F;rook.io&#x2F;&quot; class=&quot;external&quot;&gt;Rook&lt;&#x2F;a&gt;, a Kubernetes operator for managing Ceph. It was a bit of a learning curve getting Rook up and running, but everything has worked fairly well since then. Some random troubleshooting and bug hunting, but none of which has ever brought down storage in my cluster. I&#x27;m amazed at the resilience.&lt;&#x2F;p&gt;
+&lt;p&gt;Having said that, it is not the fastest storage setup. And it&#x27;s completely my own doing. I&#x27;m using the cheapest consumer SSDs I could get my hands on. And most of them are connected to the machines via USB, since I have no way to add additional SATA ports to my 1L boxes. &lt;q&gt;Over USB? What is he thinking!? He mad?&lt;&#x2F;q&gt; Hear me out, my primary use for Ceph storage is to store my personal data. It&#x27;s more important for me to have the data safe rather than it being fast. I don&#x27;t plan on running a database on Ceph backed block storage, so chasing speed is not something I want to do here.&lt;&#x2F;p&gt;
+&lt;p&gt;Each 1L box, has one internal SATA port available that I&#x27;m taking advantage of, and I&#x27;m also connecting 2x 3.5&quot; drives over USB3. That&#x27;s 3 drives per node and 9 drives in total. This allows me to store valuable data with 3x replication and less valuable data (e.g. DVD backups) with 4+2 EC (erasure coding). The EC gives me slightly more usable storage out of my disks.&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;img src=&quot;https:&#x2F;&#x2F;www.roosmaa.net&#x2F;blog&#x2F;2024&#x2F;hello-homelab&#x2F;usb-ssds.jpg&quot; alt=&quot;Rats nest of USB SSDs&quot; &#x2F;&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;Over the past 6 months, I&#x27;ve simulated various failure conditions (kill power to a single host, pull the drive from the host, kill the data on the some of the drives) and Ceph has not complained one bit and has successfully kept my data safe.&lt;&#x2F;p&gt;
+&lt;p&gt;One thing to keep in mind, is that currently I&#x27;m only using slightly above 1% of the available storage. I&#x27;m certain that as the cluster fills up more, it will have a few more surprises for me in store. But by that time, I may already be running it on better hardware.&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;em&gt;And the databases?&lt;&#x2F;em&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;I&#x27;m very much Postgres biased when it comes to databases, and I can run that off of local-path storage. Postgres itself takes care of replication in a HA setup (shout out to &lt;a href=&quot;https:&#x2F;&#x2F;cloudnative-pg.io&#x2F;) operator which makes HA a breeze&quot; class=&quot;external&quot;&gt;CloudNativePG&lt;&#x2F;a&gt;. Combined that with regular backups to Ceph backed S3, I feel fairly confident there&#x27;s not going to be any data loss there either.&lt;&#x2F;p&gt;
+&lt;p&gt;That said, none of the databases so far contain critical personal data. So, if I am proven wrong, it won&#x27;t be too painful of a lesson.&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;all-the-other-kubernetes-cohabitants&quot;&gt;All the other Kubernetes cohabitants&lt;&#x2F;h2&gt;
+&lt;p&gt;In addition to Ceph, I have a whole bunch of other software running in the cluster to make it &quot;usable&quot; for regular applications:&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&quot;https:&#x2F;&#x2F;cilium.io&#x2F;&quot; class=&quot;external&quot;&gt;Cilium&lt;&#x2F;a&gt; - for networking&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;a href=&quot;https:&#x2F;&#x2F;argo-cd.readthedocs.io&#x2F;en&#x2F;stable&#x2F;&quot; class=&quot;external&quot;&gt;ArgoCD&lt;&#x2F;a&gt; - for deploying software into the cluster&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;a href=&quot;https:&#x2F;&#x2F;github.com&#x2F;bitnami-labs&#x2F;sealed-secrets&quot; class=&quot;external&quot;&gt;sealed-secrets&lt;&#x2F;a&gt; - for storing encrypted secrets in Git&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;a href=&quot;https:&#x2F;&#x2F;openebs.io&#x2F;&quot; class=&quot;external&quot;&gt;OpenEBS&lt;&#x2F;a&gt; - for local (host-path storage)&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;a href=&quot;https:&#x2F;&#x2F;cert-manager.io&#x2F;&quot; class=&quot;external&quot;&gt;cert-manager&lt;&#x2F;a&gt; - for generating LetsEncrypt SSL certs for services&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;a href=&quot;https:&#x2F;&#x2F;github.com&#x2F;kubernetes-sigs&#x2F;external-dns&quot; class=&quot;external&quot;&gt;external-dns&lt;&#x2F;a&gt; - for automatically setting up DNS for services&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;a href=&quot;https:&#x2F;&#x2F;github.com&#x2F;kubernetes-sigs&#x2F;node-feature-discovery&quot; class=&quot;external&quot;&gt;node-feature-discovery&lt;&#x2F;a&gt; &amp;amp; &lt;a href=&quot;https:&#x2F;&#x2F;github.com&#x2F;intel&#x2F;intel-device-plugins-for-kubernetes&quot; class=&quot;external&quot;&gt;intel-device-plugins&lt;&#x2F;a&gt; - for passing integrated GPUs into pods&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;a href=&quot;https:&#x2F;&#x2F;traefik.io&#x2F;&quot; class=&quot;external&quot;&gt;traefik&lt;&#x2F;a&gt; - as the main ingress controller&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;a href=&quot;https:&#x2F;&#x2F;tailscale.com&#x2F;&quot; class=&quot;external&quot;&gt;tailscale&lt;&#x2F;a&gt; - secure access to the cluster from anywhere&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;p&gt;And then there&#x27;s the user-facing applications, of which there aren&#x27;t many currently:&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&quot;https:&#x2F;&#x2F;pi-hole.net&#x2F;&quot; class=&quot;external&quot;&gt;Pi-hole&lt;&#x2F;a&gt; - provides DNS services for the home LAN and also on my phone via tailscale&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;a href=&quot;https:&#x2F;&#x2F;www.traccar.org&#x2F;&quot; class=&quot;external&quot;&gt;Traccar&lt;&#x2F;a&gt; - keeps track of my car with notifications for unexpected events (crashes, towing, etc)&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;a href=&quot;https:&#x2F;&#x2F;jellyfin.org&#x2F;&quot; class=&quot;external&quot;&gt;Jellyfin&lt;&#x2F;a&gt; - for enjoying backed up DVDs in a more modern way&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;a href=&quot;https:&#x2F;&#x2F;syncthing.net&#x2F;&quot; class=&quot;external&quot;&gt;Syncthing&lt;&#x2F;a&gt; - for syncing notes across devices &amp;amp; keeping a copy of all the photos from the phones on the cluster&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;h2 id=&quot;tunnelling-into-the-cluster&quot;&gt;Tunnelling into the cluster&lt;&#x2F;h2&gt;
+&lt;p&gt;Even though most of my devices can access the services through tailscale, there are some trackers that need to connect to traccar via the public web. Ideally, I would&#x27;ve wanted to use Cloudflare Tunnels or similar services, but these only support HTTP traffic. The trackers, however, use various different binary protocols.&lt;&#x2F;p&gt;
+&lt;p&gt;The option I settled on, was to get the cheapest VPS I could find. Then installing just tailscale package and some firewall forwarding rules on it. By enabling automatic updates, it means this setup is effectively configure once and forget.&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;keeping-everything-up-to-date&quot;&gt;Keeping everything up to date&lt;&#x2F;h2&gt;
+&lt;p&gt;I knew that I had to develop the habit of keeping most of the software as recent as possible. Otherwise, upgrading severely out of date software would become such a headache I would never want to do that.&lt;&#x2F;p&gt;
+&lt;p&gt;I started off keeping track of all the software in the cluster using &lt;a href=&quot;https:&#x2F;&#x2F;newreleases.io&#x2F;&quot; class=&quot;external&quot;&gt;NewReleases&lt;&#x2F;a&gt;. I would get a weekly digest of all the updates. After which, I have to find an evening where I would review the changelogs for potential dangers to look out for and update everything.&lt;&#x2F;p&gt;
+&lt;p&gt;A lot of the projects mentioned above, are very actively developed. This meant, that every Monday, the weekly email from NewReleases, was fairly feature-packed. It didn&#x27;t take long, for the update ritual to become a chore I didn&#x27;t look forward to. It was also one of the reasons why I effectively stopped deploying new services on the cluster, as I didn&#x27;t want to increase the burden on myself.&lt;&#x2F;p&gt;
+&lt;p&gt;At some point, I decided to rethink how I approached updates. I restructured my repository containing the kubernetes manifests, and introduced &lt;a href=&quot;https:&#x2F;&#x2F;docs.renovatebot.com&#x2F;&quot; class=&quot;external&quot;&gt;Renovate&lt;&#x2F;a&gt;. Previously, I had to update all the dependencies at once to be able to delete the digest email from NewReleases. Otherwise, I would&#x27;ve lost track of some updates. With Renovate, each of the updates gets its own pull-request. And depending on the service &amp;amp; the changelog I can decide to postpone certain updates for evenings where I have time to take care of them. The other - low risk - updates I can just merge and forget about.&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;is-it-all-worth-it&quot;&gt;Is it all worth it?&lt;&#x2F;h2&gt;
+&lt;p&gt;It has been a somewhat bumpy road, so far. I&#x27;ve enjoyed learning about new things and tinkering with both the hardware and software side of running a homelab. What I didn&#x27;t anticipate was the responsibilities of maintenance that come with running a &quot;production&quot; cluster - &lt;q&gt;Why is the internet down? Oh, the pi-hole pods are in a crashloop&lt;&#x2F;q&gt;. This has paced me from moving more of my life onto self-hosted services.&lt;&#x2F;p&gt;
+&lt;p&gt;But there&#x27;s still plenty I want to explore, so I&#x27;m not throwing in my towel just yet. I&#x27;ll take my time with it, and won&#x27;t rush myself. And, in doing so, I hope I&#x27;ll eventually reach the goal of having all my data on my own hardware.&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;em&gt;If you managed to get this far, this topic is probably something you&#x27;re interested in. Drop me a DM on any of the social platforms I&#x27;m on, if you want to chat.&lt;&#x2F;em&gt;&lt;&#x2F;p&gt;
+</content>
+        
+    </entry>
+</feed>
