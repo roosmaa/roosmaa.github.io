@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom" xml:lang="en">
+    <title>Mart Roosmaa - ollama</title>
+    <link rel="self" type="application/atom+xml" href="https://www.roosmaa.net/tags/ollama/atom.xml"/>
+    <link rel="alternate" type="text/html" href="https://www.roosmaa.net"/>
+    <generator uri="https://www.getzola.org/">Zola</generator>
+    <updated>2025-12-24T00:00:00+00:00</updated>
+    <id>https://www.roosmaa.net/tags/ollama/atom.xml</id>
+    <entry xml:lang="en">
+        <title>Ollama, LM Studio vs llama.cpp</title>
+        <published>2025-12-24T00:00:00+00:00</published>
+        <updated>2025-12-24T00:00:00+00:00</updated>
+        
+        <author>
+          <name>
+            
+              Mart Roosmaa
+            
+          </name>
+        </author>
+        
+        <link rel="alternate" type="text/html" href="https://www.roosmaa.net/blog/2025/ollama-lmstudio-llamacpp/"/>
+        <id>https://www.roosmaa.net/blog/2025/ollama-lmstudio-llamacpp/</id>
+        
+        <content type="html" xml:base="https://www.roosmaa.net/blog/2025/ollama-lmstudio-llamacpp/">&lt;p&gt;When getting started with local LLMs, one of the very first decisions you have to make is what kind of inference engine [1]  to use. There are quite a few out there, so which one is best? I&#x27;ll take a look at the three main options: LM Studio, Ollama and llama.cpp.&lt;&#x2F;p&gt;
+&lt;p&gt;[1] Inference engine: a program that gives life to the huge data files on HuggingFace.&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;lm-studio&quot;&gt;LM Studio&lt;&#x2F;h2&gt;
+&lt;p&gt;&lt;a href=&quot;https:&#x2F;&#x2F;lmstudio.ai&#x2F;&quot;&gt;LM Studio&lt;&#x2F;a&gt; is primarily a GUI application. It has a user-friendly interface for downloading the models and getting them running. It includes a chat interface where you can quickly converse with the loaded models.&lt;&#x2F;p&gt;
+&lt;p&gt;The models that LM Studio uses come from HuggingFace. In HuggingFace there&#x27;s &lt;a href=&quot;https:&#x2F;&#x2F;huggingface.co&#x2F;lmstudio-community&quot;&gt;LM Studio Community&lt;&#x2F;a&gt; which provides a set of curated versions for LM Studio.&lt;&#x2F;p&gt;
+&lt;p&gt;Behind the scenes, it uses llama.cpp to do the actual model inference - CPU, CUDA, ROCm, Vulkan &amp;amp; Metal are all supported. In addition to all the llama.cpp-based engines, there&#x27;s also an Apple&#x27;s MLX-based engine.&lt;&#x2F;p&gt;
+&lt;p&gt;LM Studio provides its own APIs in addition to an OpenAI-compatible API for interacting with the models programmatically, or from agents and IDEs that support OpenAI-compatible providers.&lt;&#x2F;p&gt;
+&lt;p&gt;It also has &lt;code&gt;lms&lt;&#x2F;code&gt; CLI utility for people who prefer to interact with it via the terminal.&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;ollama&quot;&gt;Ollama&lt;&#x2F;h2&gt;
+&lt;p&gt;&lt;a href=&quot;https:&#x2F;&#x2F;ollama.com&#x2F;&quot;&gt;Ollama&lt;&#x2F;a&gt; was trying to be the Docker of LLMs (before Docker started supporting running models itself). It is a CLI based application that gives users a very convenient way to download and run models. It focused on developers first, and successfully got itself integrated in various applications that end up being the more user-friendly frontends for it.&lt;&#x2F;p&gt;
+&lt;p&gt;The main innovation that Ollama introduced, in my opinion, is automatic model unloading based on VRAM usage. Ollama can keep as many models loaded as memory permits and will unload some of them only when needed to make room for the newly requested model.&lt;&#x2F;p&gt;
+&lt;p&gt;There are a few other ideas that they&#x27;ve adopted which differ from the status-quo. For example, Ollama introduced a Docker-like registry for models where files are stored and downloaded based on their SHA-256 hashes. HuggingFace has only recently implemented their &quot;registry&quot; support, so now it&#x27;s possible to pull GGUFs directly from HuggingFace.&lt;&#x2F;p&gt;
+&lt;p&gt;Then there is the Modelfile concept, which is meant to be a Dockerfile-inspired solution to defining models. To me, this seems like an unnecessary - or even wrong - abstraction. If you want to tweak parameters (e.g., &lt;code&gt;num_ctx&lt;&#x2F;code&gt;, &lt;code&gt;num_gpu&lt;&#x2F;code&gt;, &lt;code&gt;use_mmap&lt;&#x2F;code&gt;) to optimise a model for your hardware, you must create a new version of each model you use.&lt;&#x2F;p&gt;
+&lt;p&gt;What puzzles me the most is Ollama&#x27;s decision to replace the the de-facto standard Jinja templates (for chat messages) with Go templates. This means that if one wants to run a newer model on Ollama, you also have to port the Jinja template to Go template syntax.&lt;&#x2F;p&gt;
+&lt;p&gt;Choosing the quantization level for a model is also somewhat involved. Ollama defaults to Q4_K_M quantization level for all its published models. If you want to change that, you must first obtain the Modelfile of ollama&#x27;s model (for the chat template and parameters), then find a GGUF with the desired quantization on HuggingFace and finally combine the two.&lt;&#x2F;p&gt;
+&lt;p&gt;Ollama has been using llama.cpp behind the scenes as its inference engine, but it is slowly moving towards its own version. In the short term, I think, it won&#x27;t be great for users as the new engine has to play catch-up with llama.cpp; in the long term, however, it could be interesting.&lt;&#x2F;p&gt;
+&lt;p&gt;Although Ollama relies on llama.cpp, it lags behind in some areas. For example, Vulkan support is still experimental, and Ollama does not support partitioned GGUFs, which are becoming the norm on HuggingFace.&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;llama-cpp&quot;&gt;Llama.cpp&lt;&#x2F;h2&gt;
+&lt;p&gt;&lt;a href=&quot;https:&#x2F;&#x2F;github.com&#x2F;ggml-org&#x2F;llama.cpp&quot;&gt;Llama.cpp&lt;&#x2F;a&gt; is a C++ library that powers the two offerings above. In addition to being a library that others can build on, llama.cpp ships with &lt;a href=&quot;https:&#x2F;&#x2F;github.com&#x2F;ggml-org&#x2F;llama.cpp&#x2F;tree&#x2F;master&#x2F;tools&#x2F;server#readme&quot;&gt;llama-server&lt;&#x2F;a&gt; - a tool that lets you run models via OpenAI-compatible APIs, just like Ollama and LM Studio. There is also &lt;a href=&quot;https:&#x2F;&#x2F;github.com&#x2F;ggml-org&#x2F;LlamaBarn&quot;&gt;LlamaBarn&lt;&#x2F;a&gt;, a light-weight GUI for macOS.&lt;&#x2F;p&gt;
+&lt;p&gt;Llama.cpp is very actively developed, support for new models and optimizations for existing ones are added almost daily. The project does not have scheduled releases - what gets implemented (merged) is shipped automatically. This means that you always get the latest changes, but you may also encounter bugs and&#x2F;or regressions.&lt;&#x2F;p&gt;
+&lt;p&gt;Llama-server exposes a lot of knobs to tweak and supports various backends (the main ones being CUDA, ROCm, Vulkan, and CPU). This allows you to experiment with a lot of them to find the best configuration for your hardware. Most of these knobs are also exposed in Ollama &amp;amp; LM Studio, but not all.&lt;&#x2F;p&gt;
+&lt;p&gt;The easiest way to run llama-server is via their official Docker images. It is also available through winget, homebrew or nix package managers. Pre-built binaries can be downloaded from the Github releases.&lt;&#x2F;p&gt;
+&lt;p&gt;In general, llama-server is best if you want to run the latest models &amp;amp; get the most out of your hardware.&lt;&#x2F;p&gt;
+&lt;h3 id=&quot;side-note-reusing-models&quot;&gt;Side note: Reusing models&lt;&#x2F;h3&gt;
+&lt;p&gt;It is perfectly reasonable to use more than one of the tools above. One question that may arise is whether you can download the model once and run in different tools, instead of downloading the data multiple times.&lt;&#x2F;p&gt;
+&lt;p&gt;Between LM Studio and llama-server reusing the downloaded models is relatively simple. Some LM studio specific models may use Jinja template functions that don&#x27;t exist in llama.cpp, but in most cases the models are interchangeable.&lt;&#x2F;p&gt;
+&lt;p&gt;Ollama makes this more difficult. Even though it uses GGUFs behind the scenes, it stores everything by hash, so an extra step is required to translate to&#x2F;from the hash when trying to reuse data.&lt;&#x2F;p&gt;
+</content>
+        
+    </entry>
+</feed>
