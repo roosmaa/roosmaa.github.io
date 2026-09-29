@@ -1,0 +1,18 @@
+flowchart TD
+  wan((WAN))<-->s1[switch-1]
+  s1<-.->|default gw|n1n1
+  s1<-.->|default gw|n2n1
+  s1<-.->|default gw|n3n1
+  subgraph node-1
+  n1n1[NIC-1] ~~~ n1n2[NIC-2]
+  end
+  subgraph node-2
+  n2n1[NIC-1] ~~~ n2n2[NIC-2]
+  end
+  subgraph node-3
+  n3n1[NIC-1] ~~~ n3n2[NIC-2]
+  end
+  s2[switch-2]
+  n1n2<-.->s2
+  n2n2<-.->s2
+  n3n2<-.->s2
