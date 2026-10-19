@@ -1,0 +1,15 @@
+flowchart LR
+  subgraph node-1
+  direction TB
+  zfs([ZFS PV]) --> smbsrv[samba-server]
+  end
+
+  smbsrv -- csi-driver-smb --> smb1([SMB PV]) --> pod1
+  subgraph node-2
+  pod1[Pod 1]
+  end
+
+  smbsrv -- csi-driver-smb --> smb2([SMB PV]) --> pod2
+  subgraph node-3
+  pod2[Pod 2]
+  end
